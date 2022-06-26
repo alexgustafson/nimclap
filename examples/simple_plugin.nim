@@ -1,3 +1,3 @@
-from src/nimclap import audio_buffer
+import ../src/nimclap/nimclap
 
 echo "Build Success"

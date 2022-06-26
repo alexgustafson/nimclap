@@ -19,4 +19,4 @@ task genbindings, "generate bindings":
 
 
 task buildSimplePlugin, "build simple plugin":
-  exec "nim examples/simple_plugin.nim"
+  exec "nim r examples/simple_plugin.nim"

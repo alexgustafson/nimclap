@@ -1,10 +1,12 @@
 from os import `/`,
   createDir, removeDir, parentDir,
   copyDir, findExe, extractFilename,
-  changeFileExt
+  changeFileExt, removeFile, walkFiles,
+  moveFile
 
 import strformat
 import strutils
+import sequtils
 from osproc import execCmd
 
 
@@ -13,17 +15,6 @@ const
   nimclapDir      = projectDir/"src"/"nimclap"
   clapSourceDir   = "clap"/"include"/"clap"
   nimclapHeadersDir  = nimclapDir/"clap"
-  clapSourceFiles = [
-    nimclapHeadersDir/"audio-buffer.h",
-    nimclapHeadersDir/"clap.h",
-    nimclapHeadersDir/"color.h",
-    nimclapHeadersDir/"entry.h",
-    nimclapHeadersDir/"events.h",
-    nimclapHeadersDir/"fixedpoint.h",
-    nimclapHeadersDir/"id.h",
-    nimclapHeadersDir/"plugin.h",
-    nimclapHeadersDir/"string-sizes.h",
-  ]
   c2nimheader = """
 #ifdef C2NIM
 #  nep1
@@ -37,13 +28,20 @@ proc genDirStructure =
   createDir(nimclapDir)
   copyDir(clapSourceDir, nimclapHeadersDir)
 
+  for file in toSeq(walkFiles(nimclapHeadersDir/"*.h")):
+    let filename = file.extractFilename()
+    let filepath = file.parentDir()
+
+    moveFile(file, filepath/filename.replace("-", "_"))
+
 
 proc preprocessHeaderFiles() =
 
   echo "\nPreprocessing Header Files"
 
-  for filepath in clapSourceFiles:
+  for filepath in walkFiles(nimclapHeadersDir/"*.h"):
     let filename = filepath.extractFilename.changeFileExt("")
+    let pathToFile = filepath.parentDir()
 
     let
       headerFile = readFile(filepath)
@@ -58,24 +56,29 @@ proc preprocessHeaderFiles() =
     while i < headerFileLines.len:
       let
         line = headerFileLines[i]
-        words = line.splitWhitespace
+        # words = line.splitWhitespace
 
       i.inc
       rs.add line & "\n"
 
-    writeFile(nimclapHeadersDir/fmt"{filename}_modified.h", rs)
+    writeFile(pathToFile/fmt"{filename}_modified.h", rs)
 
 
 proc convertToNim() =
 
   echo "\nExecuting c2nim"
 
-  for filepath in clapSourceFiles:
+  for filepath in walkFiles(nimclapHeadersDir/"*.h"):
     let filename = filepath.extractFilename.changeFileExt("")
-    let outparam = fmt" --out={nimclapHeadersDir}/{filename}.nim"
-    let c2nimcmd = findExe("c2nim") & fmt" {outparam} " & nimclapHeadersDir/fmt"{filename}_modified.h"
+    let nimfilename = filename.replace("-", "_")
+    let pathToFile = filepath.parentDir()
+    let outparam = fmt" --out={pathToFile}/{nimfilename}.nim"
+    let c2nimcmd = findExe("c2nim") & fmt" {outparam} " & pathToFile/fmt"{filename}_modified.h"
     echo c2nimcmd & "\n"
     assert execCmd(c2nimcmd) == 0
+
+    removeFile(pathToFile/fmt"{filename}_modified.h")
+    removeFile(pathToFile/fmt"{filename}.h")
 
 
 proc main =

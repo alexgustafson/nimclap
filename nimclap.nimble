@@ -16,3 +16,7 @@ from os import `/`, parentDir
 
 task genbindings, "generate bindings":
   exec "nim r src"/"generate_bindings.nim"
+
+
+task buildSimplePlugin, "build simple plugin":
+  exec "nim examples/simple_plugin.nim"

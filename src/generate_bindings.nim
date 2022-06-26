@@ -2,19 +2,25 @@ from os import `/`,
   createDir, removeDir, parentDir,
   copyDir, findExe, extractFilename,
   changeFileExt, removeFile, walkFiles,
-  moveFile
-
+  moveFile, walkDirRec
+import re
 import strformat
 import strutils
 import sequtils
 from osproc import execCmd
 
 
+
+
 const
   projectDir      = currentSourcePath().parentDir().parentDir()
   nimclapDir      = projectDir/"src"/"nimclap"
   clapSourceDir   = "clap"/"include"/"clap"
-  nimclapHeadersDir  = nimclapDir/"clap"
+  nimclapHeadersDir: string = nimclapDir/"clap"
+  skipHeaderFiles = @[
+    nimclapHeadersDir/"private"/"macros.h"
+  ]
+
   c2nimheader = """
 #ifdef C2NIM
 #  nep1
@@ -23,12 +29,20 @@ const
 """
 
 
+
+iterator  clapHeaderFiles: string {.closure.} =
+  for file in walkDirRec nimclapHeadersDir:
+    if file.match re"(?!.*_modified)(.*\.h)":
+      if not skipHeaderFiles.contains(file):
+        yield file
+
+
 proc genDirStructure =
   removeDir(nimclapDir)
   createDir(nimclapDir)
   copyDir(clapSourceDir, nimclapHeadersDir)
 
-  for file in toSeq(walkFiles(nimclapHeadersDir/"*.h")):
+  for file in clapHeaderFiles:
     let filename = file.extractFilename()
     let filepath = file.parentDir()
 
@@ -39,7 +53,7 @@ proc preprocessHeaderFiles() =
 
   echo "\nPreprocessing Header Files"
 
-  for filepath in walkFiles(nimclapHeadersDir/"*.h"):
+  for filepath in clapHeaderFiles:
     let filename = filepath.extractFilename.changeFileExt("")
     let pathToFile = filepath.parentDir()
 
@@ -68,7 +82,7 @@ proc convertToNim() =
 
   echo "\nExecuting c2nim"
 
-  for filepath in walkFiles(nimclapHeadersDir/"*.h"):
+  for filepath in clapHeaderFiles:
     let filename = filepath.extractFilename.changeFileExt("")
     let nimfilename = filename.replace("-", "_")
     let pathToFile = filepath.parentDir()

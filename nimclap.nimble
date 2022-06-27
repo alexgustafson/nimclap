@@ -2,10 +2,10 @@
 
 version       = "0.1.0"
 author        = "Alex Gustafson"
-description   = "A Nim wrapper around then Clever Audio Plugin library"
+description   = "A Clever Audio Plugin wrapper for nim"
 license       = "MIT"
 srcDir        = "src"
-
+backend = "c"
 
 # Dependencies
 

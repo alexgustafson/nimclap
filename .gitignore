@@ -1,1 +1,3 @@
-./clap
+clap
+!src/nimclap/clap
+

@@ -1,0 +1,2 @@
+type
+    placeholder*  = uint8

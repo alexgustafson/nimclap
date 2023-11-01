@@ -5,7 +5,7 @@ import
 ##  The host has no obligation to execute these requests, so the interface may be
 ##  partially working.
 
-let CLAP_EXT_TRANSPORT_CONTROL*: UncheckedArray[char] = "clap.transport-control.draft/0"
+let CLAP_EXT_TRANSPORT_CONTROL*: cstring = cstring"clap.transport-control.draft/0"
 
 type
   clap_host_transport_control* {.bycopy.} = object

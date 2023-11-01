@@ -1,7 +1,7 @@
 import
   ../../plugin
 
-let CLAP_EXT_PRESET_LOAD*: UncheckedArray[char] = "clap.preset-load.draft/2"
+let CLAP_EXT_PRESET_LOAD*: cstring = cstring"clap.preset-load.draft/2"
 
 type
   clap_plugin_preset_load* {.bycopy.} = object

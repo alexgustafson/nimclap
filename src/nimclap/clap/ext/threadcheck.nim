@@ -2,7 +2,7 @@ import ../host
 import
   ../plugin
 
-let CLAP_EXT_THREAD_CHECK*: UncheckedArray[char] = "clap.thread-check"
+let CLAP_EXT_THREAD_CHECK*: cstring = cstring"clap.thread-check"
 
 ##  @page thread-check
 ##

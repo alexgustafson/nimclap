@@ -1,7 +1,7 @@
 import
   ../../plugin
 
-let CLAP_EXT_CHECK_FOR_UPDATE*: UncheckedArray[char] = "clap.check_for_update.draft/0"
+let CLAP_EXT_CHECK_FOR_UPDATE*: cstring = cstring"clap.check_for_update.draft/0"
 
 type
   clap_check_for_update_info* {.bycopy.} = object

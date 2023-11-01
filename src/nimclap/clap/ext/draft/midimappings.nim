@@ -1,7 +1,7 @@
 import
   ../../plugin
 
-let CLAP_EXT_MIDI_MAPPINGS*: UncheckedArray[char] = "clap.midi-mappings.draft/0"
+let CLAP_EXT_MIDI_MAPPINGS*: cstring = cstring"clap.midi-mappings.draft/0"
 
 const
   CLAP_MIDI_MAPPING_CC7* = 0

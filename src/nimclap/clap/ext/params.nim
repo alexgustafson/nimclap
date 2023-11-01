@@ -122,7 +122,7 @@ import
 ##  - if you plan to use adapters for other plugin formats, then you need to pay extra
 ##    attention to the adapter requirements
 
-let CLAP_EXT_PARAMS*: UncheckedArray[char] = "clap.params"
+let CLAP_EXT_PARAMS*: cstring = cstring"clap.params"
 
 const                         ##  Is this param stepped? (integer values only)
      ##  if so the double value is converted to integer using a cast (equivalent to trunc).

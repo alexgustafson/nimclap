@@ -8,7 +8,7 @@ import
 ##  If the plugin does not implement this extension, it won't have note input or output.
 ##  The plugin is only allowed to change its note ports configuration while it is deactivated.
 
-let CLAP_EXT_NOTE_PORTS*: UncheckedArray[char] = "clap.note-ports"
+let CLAP_EXT_NOTE_PORTS*: cstring = cstring"clap.note-ports"
 
 type
   clap_note_dialect* = enum     ##  Uses clap_event_note and clap_event_note_expression.

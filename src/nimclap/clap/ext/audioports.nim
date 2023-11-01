@@ -12,11 +12,11 @@ import
 ##
 ##  The plugin is only allowed to change its ports configuration while it is deactivated.
 
-let CLAP_EXT_AUDIO_PORTS*: UncheckedArray[char] = "clap.audio-ports"
+let CLAP_EXT_AUDIO_PORTS*: cstring = cstring"clap.audio-ports"
 
-let CLAP_PORT_MONO*: UncheckedArray[char] = "mono"
+let CLAP_PORT_MONO*: cstring = cstring"mono"
 
-let CLAP_PORT_STEREO*: UncheckedArray[char] = "stereo"
+let CLAP_PORT_STEREO*: cstring = cstring"stereo"
 
 const                         ##  This port is the main audio input or output.
      ##  There can be only one main input and main output.

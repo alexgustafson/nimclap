@@ -3,9 +3,9 @@ import
 
 ##  This extension can be used to specify the channel mapping used by the plugin.
 
-let CLAP_EXT_AMBISONIC*: UncheckedArray[char] = "clap.ambisonic.draft/2"
+let CLAP_EXT_AMBISONIC*: cstring = cstring"clap.ambisonic.draft/2"
 
-let CLAP_PORT_AMBISONIC*: UncheckedArray[char] = "ambisonic"
+let CLAP_PORT_AMBISONIC*: cstring = cstring"ambisonic"
 
 const                         ##  FuMa channel ordering
   CLAP_AMBISONIC_FUMA* = 0      ##  ACN channel ordering

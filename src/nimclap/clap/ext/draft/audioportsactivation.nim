@@ -24,7 +24,7 @@ import
 ##  Audio ports state is invalidated by clap_plugin_audio_ports_config.select() and
 ##  clap_host_audio_ports.rescan(CLAP_AUDIO_PORTS_RESCAN_LIST).
 
-let CLAP_EXT_AUDIO_PORTS_ACTIVATION*: UncheckedArray[char] = "clap.audio-ports-activation/draft-1"
+let CLAP_EXT_AUDIO_PORTS_ACTIVATION*: cstring = cstring"clap.audio-ports-activation/draft-1"
 
 type
   clap_plugin_audio_ports_activation* {.bycopy.} = object

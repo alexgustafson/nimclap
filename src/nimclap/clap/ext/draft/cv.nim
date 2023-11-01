@@ -4,9 +4,9 @@ import
 ##  This extension can be used to specify the cv channel type used by the plugin.
 ##  Work in progress, suggestions are welcome
 
-let CLAP_EXT_CV*: UncheckedArray[char] = "clap.cv.draft/0"
+let CLAP_EXT_CV*: cstring = cstring"clap.cv.draft/0"
 
-let CLAP_PORT_CV*: UncheckedArray[char] = "cv"
+let CLAP_PORT_CV*: cstring = cstring"cv"
 
 const                         ##  TODO: standardize values?
   CLAP_CV_VALUE* = 0

@@ -1,7 +1,7 @@
 import
   ../../plugin
 
-let CLAP_EXT_RESOURCE_DIRECTORY*: UncheckedArray[char] = "clap.resource-directory.draft/0"
+let CLAP_EXT_RESOURCE_DIRECTORY*: cstring = cstring"clap.resource-directory.draft/0"
 
 ##  @page Resource Directory
 ##

@@ -4,7 +4,7 @@ import
 ##  This extension let your plugin hook itself into the host select/poll/epoll/kqueue reactor.
 ##  This is useful to handle asynchronous I/O on the main thread.
 
-let CLAP_EXT_POSIX_FD_SUPPORT*: UncheckedArray[char] = "clap.posix-fd-support"
+let CLAP_EXT_POSIX_FD_SUPPORT*: cstring = cstring"clap.posix-fd-support"
 
 const ##  IO events flags, they can be used to form a mask which describes:
      ##  - which events you are interested in (register_fd/modify_fd)

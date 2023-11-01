@@ -4,7 +4,7 @@ import
 ##  Use it to retrieve const clap_plugin_invalidation_factory_t* from
 ##  clap_plugin_entry.get_factory()
 
-let CLAP_PLUGIN_INVALIDATION_FACTORY_ID*: UncheckedArray[char] = "clap.plugin-invalidation-factory/draft0"
+let CLAP_PLUGIN_INVALIDATION_FACTORY_ID*: cstring = cstring"clap.plugin-invalidation-factory/draft0"
 
 type
   clap_plugin_invalidation_source* {.bycopy.} = object

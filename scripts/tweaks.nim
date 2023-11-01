@@ -29,8 +29,11 @@ let CLAP_VERSION*: clap_version = clap_version(
   revision: CLAP_VERSION_REVISION,
 )
 """
+  unchecked_array_char: string = "UncheckedArray[char] = "
+  unchecked_array_char_replace: string = "cstring = cstring"
   replace_strings* = @[
     (version_text, version_replace),
+    (unchecked_array_char, unchecked_array_char_replace),
   ]
 
   additional_imports* = {
@@ -41,4 +44,5 @@ let CLAP_VERSION*: clap_version = clap_version(
     "threadcheck": "import ../host\n",
     "noteports": "import ../id, ../host\n",
     "audioports": "import ../id, ../host\n",
+    "state": "import ../host\n",
   }.toTable

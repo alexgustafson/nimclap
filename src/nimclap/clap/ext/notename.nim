@@ -1,7 +1,7 @@
 import
   ../plugin, ../stringsizes
 
-let CLAP_EXT_NOTE_NAME*: UncheckedArray[char] = "clap.note-name"
+let CLAP_EXT_NOTE_NAME*: cstring = cstring"clap.note-name"
 
 type
   clap_note_name* {.bycopy.} = object

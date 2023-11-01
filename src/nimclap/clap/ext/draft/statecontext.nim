@@ -21,7 +21,7 @@ import
 ##  If the plugin implements CLAP_EXT_STATE_CONTEXT then it is mandatory to also implement
 ##  CLAP_EXT_STATE.
 
-let CLAP_EXT_STATE_CONTEXT*: UncheckedArray[char] = "clap.state-context.draft/1"
+let CLAP_EXT_STATE_CONTEXT*: cstring = cstring"clap.state-context.draft/1"
 
 type
   clap_plugin_state_context_type* = enum ##  suitable for duplicating a plugin instance

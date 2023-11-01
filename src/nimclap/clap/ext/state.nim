@@ -1,3 +1,4 @@
+import ../host
 import
   ../plugin, ../stream
 
@@ -9,7 +10,7 @@ import
 ##  between project reloads, when duplicating and copying plugin instances, and
 ##  for host-side preset management.
 
-let CLAP_EXT_STATE*: UncheckedArray[char] = "clap.state"
+let CLAP_EXT_STATE*: cstring = cstring"clap.state"
 
 type
   clap_plugin_state* {.bycopy.} = object

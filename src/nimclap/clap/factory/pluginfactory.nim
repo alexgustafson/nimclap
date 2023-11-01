@@ -5,7 +5,7 @@ import
 ##  Use it to retrieve const clap_plugin_factory_t* from
 ##  clap_plugin_entry.get_factory()
 
-let CLAP_PLUGIN_FACTORY_ID*: UncheckedArray[char] = "clap.plugin-factory"
+let CLAP_PLUGIN_FACTORY_ID*: cstring = cstring"clap.plugin-factory"
 
 ##  Every method must be thread-safe.
 ##  It is very important to be able to scan the plugin as quickly as possible.

@@ -1,7 +1,7 @@
 import
   ../../plugin, ../../events, ../../stringsizes
 
-let CLAP_EXT_TRIGGERS*: UncheckedArray[char] = "clap.triggers.draft/0"
+let CLAP_EXT_TRIGGERS*: cstring = cstring"clap.triggers.draft/0"
 
 ##  @page Trigger events
 ##

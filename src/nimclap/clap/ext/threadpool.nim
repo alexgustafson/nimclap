@@ -37,7 +37,7 @@ import
 ##  If the host knows that it is running under hard real-time pressure it may decide to not
 ##  provide this interface.
 
-let CLAP_EXT_THREAD_POOL*: UncheckedArray[char] = "clap.thread-pool"
+let CLAP_EXT_THREAD_POOL*: cstring = cstring"clap.thread-pool"
 
 type
   clap_plugin_thread_pool* {.bycopy.} = object

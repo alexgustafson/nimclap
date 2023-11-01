@@ -29,7 +29,7 @@ import
 ##  Pressing that button once gets you to the first page of the section.
 ##  Press it again to cycle through the section's pages.
 
-let CLAP_EXT_REMOTE_CONTROLS*: UncheckedArray[char] = "clap.remote-controls.draft/2"
+let CLAP_EXT_REMOTE_CONTROLS*: cstring = cstring"clap.remote-controls.draft/2"
 
 const
   CLAP_REMOTE_CONTROLS_COUNT* = 8

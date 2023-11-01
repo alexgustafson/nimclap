@@ -40,28 +40,28 @@ import
 ##  3. clap_plugin_gui->adjust_size(new_size) -> working_size
 ##  4. clap_plugin_gui->set_size(working_size)
 
-let CLAP_EXT_GUI*: UncheckedArray[char] = "clap.gui"
+let CLAP_EXT_GUI*: cstring = cstring"clap.gui"
 
 ##  If your windowing API is not listed here, please open an issue and we'll figure it out.
 ##  https://github.com/free-audio/clap/issues/new
 ##  uses physical size
 ##  embed using https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setparent
 
-let CLAP_WINDOW_API_WIN32*: UncheckedArray[char] = "win32"
+let CLAP_WINDOW_API_WIN32*: cstring = cstring"win32"
 
 ##  uses logical size, don't call clap_plugin_gui->set_scale()
 
-let CLAP_WINDOW_API_COCOA*: UncheckedArray[char] = "cocoa"
+let CLAP_WINDOW_API_COCOA*: cstring = cstring"cocoa"
 
 ##  uses physical size
 ##  embed using https://specifications.freedesktop.org/xembed-spec/xembed-spec-latest.html
 
-let CLAP_WINDOW_API_X11*: UncheckedArray[char] = "x11"
+let CLAP_WINDOW_API_X11*: cstring = cstring"x11"
 
 ##  uses physical size
 ##  embed is currently not supported, use floating windows
 
-let CLAP_WINDOW_API_WAYLAND*: UncheckedArray[char] = "wayland"
+let CLAP_WINDOW_API_WAYLAND*: cstring = cstring"wayland"
 
 type
   clap_hwnd* = pointer

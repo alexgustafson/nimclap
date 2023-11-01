@@ -1,7 +1,7 @@
 import
   ../plugin
 
-let CLAP_EXT_TIMER_SUPPORT*: UncheckedArray[char] = "clap.timer-support"
+let CLAP_EXT_TIMER_SUPPORT*: cstring = cstring"clap.timer-support"
 
 type
   clap_plugin_timer_support* {.bycopy.} = object

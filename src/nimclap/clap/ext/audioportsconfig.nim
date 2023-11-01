@@ -22,9 +22,9 @@ import
 ##  To inquire the exact bus layout, the plugin implements the clap_plugin_audio_ports_config_info_t
 ##  extension where all busses can be retrieved in the same way as in the audio-port extension.
 
-let CLAP_EXT_AUDIO_PORTS_CONFIG*: UncheckedArray[char] = "clap.audio-ports-config"
+let CLAP_EXT_AUDIO_PORTS_CONFIG*: cstring = cstring"clap.audio-ports-config"
 
-let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO*: UncheckedArray[char] = "clap.audio-ports-config-info/draft-0"
+let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO*: cstring = cstring"clap.audio-ports-config-info/draft-0"
 
 ##  Minimalistic description of ports configuration
 

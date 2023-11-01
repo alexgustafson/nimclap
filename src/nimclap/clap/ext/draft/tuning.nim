@@ -1,7 +1,7 @@
 import
   ../../plugin, ../../events, ../../stringsizes
 
-let CLAP_EXT_TUNING*: UncheckedArray[char] = "clap.tuning.draft/2"
+let CLAP_EXT_TUNING*: cstring = cstring"clap.tuning.draft/2"
 
 ##  Use clap_host_event_registry->query(host, CLAP_EXT_TUNING, &space_id) to know the event space.
 ##

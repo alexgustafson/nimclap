@@ -8,7 +8,7 @@ import
 ##  - make the host's voice pool coherent with what the plugin has
 ##  - turn the host's voice management to mono when the plugin is mono
 
-let CLAP_EXT_VOICE_INFO*: UncheckedArray[char] = "clap.voice-info"
+let CLAP_EXT_VOICE_INFO*: cstring = cstring"clap.voice-info"
 
 const ##  Allows the host to send overlapping NOTE_ON events.
      ##  The plugin will then rely upon the note_id to distinguish between them.

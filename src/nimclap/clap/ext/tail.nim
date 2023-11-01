@@ -1,7 +1,7 @@
 import
   ../plugin
 
-let CLAP_EXT_TAIL*: UncheckedArray[char] = "clap.tail"
+let CLAP_EXT_TAIL*: cstring = cstring"clap.tail"
 
 type
   clap_plugin_tail* {.bycopy.} = object

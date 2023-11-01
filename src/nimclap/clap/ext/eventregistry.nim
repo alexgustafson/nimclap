@@ -1,7 +1,7 @@
 import
   ../plugin
 
-let CLAP_EXT_EVENT_REGISTRY*: UncheckedArray[char] = "clap.event-registry"
+let CLAP_EXT_EVENT_REGISTRY*: cstring = cstring"clap.event-registry"
 
 type
   clap_host_event_registry* {.bycopy.} = object

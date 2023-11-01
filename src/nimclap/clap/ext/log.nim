@@ -2,7 +2,7 @@ import ../host
 import
   ../plugin
 
-let CLAP_EXT_LOG*: UncheckedArray[char] = "clap.log"
+let CLAP_EXT_LOG*: cstring = cstring"clap.log"
 
 const
   CLAP_LOG_DEBUG* = 0

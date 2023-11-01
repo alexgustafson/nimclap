@@ -4,7 +4,7 @@ import
 ##  This extension lets the host configure the plugin's input and output audio ports.
 ##  This is a "push" approach to audio ports configuration.
 
-let CLAP_EXT_CONFIGURABLE_AUDIO_PORTS*: UncheckedArray[char] = "clap.configurable-audio-ports.draft0"
+let CLAP_EXT_CONFIGURABLE_AUDIO_PORTS*: cstring = cstring"clap.configurable-audio-ports.draft0"
 
 type
   clap_audio_port_configuration_request* {.bycopy.} = object

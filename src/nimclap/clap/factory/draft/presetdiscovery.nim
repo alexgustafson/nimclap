@@ -45,7 +45,7 @@ import
 ##  Use it to retrieve const clap_preset_discovery_factory_t* from
 ##  clap_plugin_entry.get_factory()
 
-let CLAP_PRESET_DISCOVERY_FACTORY_ID*: UncheckedArray[char] = "clap.preset-discovery-factory/draft-2"
+let CLAP_PRESET_DISCOVERY_FACTORY_ID*: cstring = cstring"clap.preset-discovery-factory/draft-2"
 
 type
   clap_preset_discovery_location_kind* = enum ##  The preset are located in a file on the OS filesystem.

@@ -4,7 +4,7 @@ import
 ##  This extension lets the host and plugin exchange menu items and let the plugin ask the host to
 ##  show its context menu.
 
-let CLAP_EXT_CONTEXT_MENU*: UncheckedArray[char] = "clap.context-menu.draft/0"
+let CLAP_EXT_CONTEXT_MENU*: cstring = cstring"clap.context-menu.draft/0"
 
 ##  There can be different target kind for a context menu
 

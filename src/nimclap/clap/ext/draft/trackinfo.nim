@@ -5,7 +5,7 @@ import
 ##  It is useful when the plugin is created, to initialize some parameters (mix, dry, wet)
 ##  and pick a suitable configuration regarding audio port type and channel count.
 
-let CLAP_EXT_TRACK_INFO*: UncheckedArray[char] = "clap.track-info.draft/1"
+let CLAP_EXT_TRACK_INFO*: cstring = cstring"clap.track-info.draft/1"
 
 const
   CLAP_TRACK_INFO_HAS_TRACK_NAME* = (1 shl 0)

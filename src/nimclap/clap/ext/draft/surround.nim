@@ -23,9 +23,9 @@ import
 ##  3. host calls clap_plugin_surround->get_channel_map()
 ##  4. host activates the plugin and can start processing audio
 
-let CLAP_EXT_SURROUND*: UncheckedArray[char] = "clap.surround.draft/3"
+let CLAP_EXT_SURROUND*: cstring = cstring"clap.surround.draft/3"
 
-let CLAP_PORT_SURROUND*: UncheckedArray[char] = "surround"
+let CLAP_PORT_SURROUND*: cstring = cstring"surround"
 
 const
   CLAP_SURROUND_FL* = 0         ##  Front Left

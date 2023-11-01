@@ -2,7 +2,7 @@ import ../host
 import
   ../plugin
 
-let CLAP_EXT_LATENCY*: UncheckedArray[char] = "clap.latency"
+let CLAP_EXT_LATENCY*: cstring = cstring"clap.latency"
 
 ##  The audio ports scan has to be done while the plugin is deactivated.
 

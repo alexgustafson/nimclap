@@ -18,5 +18,13 @@ task generate_bindings, "generate bindings":
 
 
 task debug, "debug simple plugin":
-  exec "nim compile -g --debugger:native --app:lib --gc:orc -d:release -o:examples/my_plugin.clap examples/my_plugin.nim"
+  exec "nim compile -g --debugger:native --app:lib --gc:orc -o:examples/my_plugin.clap examples/my_plugin.nim"
 
+
+task build, "build simple plugin":
+  exec "nim compile -g --app:lib --gc:orc -d:release -o:examples/my_plugin.clap examples/my_plugin.nim"
+
+task scratch, "scratch":
+  exec "c2nim --dynlib --cdecl --out=scratch/plugin-template.nim scratch/plugin-template.c"
+  exec "c2nim --dynlib --cdecl --out=scratch/scratch-c2nim.nim scratch/scratch-c2nim.c"
+  # exec "nim compile cc --app:lib --gc:orc -o:scratch/scratch-nim2c.c scratch/scratch-nim2c.nim"

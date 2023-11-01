@@ -1,7 +1,7 @@
 import
   ../plugin
 
-let CLAP_EXT_RENDER*: UncheckedArray[char] = "clap.render"
+let CLAP_EXT_RENDER*: cstring = cstring"clap.render"
 
 const                         ##  Default setting, for "realtime" processing
   CLAP_RENDER_REALTIME* = 0     ##  For processing without realtime pressure

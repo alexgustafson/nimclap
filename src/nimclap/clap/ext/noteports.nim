@@ -35,10 +35,11 @@ type
 
 type
   clap_plugin_note_ports* {.bycopy.} = object
-    ##  number of ports, for either input or output
+    ##  Number of ports, for either input or output.
     ##  [main-thread]
     count*: proc (plugin: ptr clap_plugin; is_input: bool): uint32 {.cdecl.}
-    ##  get info about about a note port.
+    ##  Get info about a note port.
+    ##  Returns true on success and stores the result into info.
     ##  [main-thread]
     get*: proc (plugin: ptr clap_plugin; index: uint32; is_input: bool;
               info: ptr clap_note_port_info): bool {.cdecl.}

@@ -24,14 +24,11 @@
 ##
 
 import
-  entry, factory/pluginfactory, factory/draft/plugininvalidation,
-  factory/draft/presetdiscovery, plugin, pluginfeatures, host, ext/audioportsconfig,
-  ext/audioports, ext/eventregistry, ext/gui, ext/latency, ext/log, ext/notename,
-  ext/noteports, ext/params, ext/posixfdsupport, ext/render, ext/state, ext/tail,
-  ext/threadcheck, ext/threadpool, ext/timersupport, ext/voiceinfo,
-  ext/draft/ambisonic, ext/draft/audioportsactivation, ext/draft/contextmenu,
-  ext/draft/cv, ext/draft/midimappings, ext/draft/paramindication,
-  ext/draft/presetload, ext/draft/remotecontrols, ext/draft/resourcedirectory,
-  ext/draft/statecontext, ext/draft/surround, ext/draft/trackinfo,
-  ext/draft/triggers, ext/draft/tuning, ext/draft/configurableaudioports,
-  ext/draft/extensibleaudioports
+  entry, factory/pluginfactory, factory/presetdiscovery, plugin, pluginfeatures,
+  host, universalpluginid, ext/ambisonic, ext/audioportsactivation,
+  ext/audioportsconfig, ext/audioports, ext/configurableaudioports,
+  ext/contextmenu, ext/eventregistry, ext/gui, ext/latency, ext/log, ext/notename,
+  ext/noteports, ext/paramindication, ext/params, ext/posixfdsupport,
+  ext/presetload, ext/remotecontrols, ext/render, ext/statecontext, ext/state,
+  ext/surround, ext/tail, ext/threadcheck, ext/threadpool, ext/timersupport,
+  ext/trackinfo, ext/voiceinfo

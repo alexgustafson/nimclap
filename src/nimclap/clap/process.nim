@@ -30,8 +30,8 @@ type
     ##  by clap_plugin_audio_ports->count().
     ##  The index maps to clap_plugin_audio_ports->get().
     ##  Input buffer and its contents are read-only.
-    audio_inputs*: ptr clap_audio_buffer
-    audio_outputs*: ptr clap_audio_buffer
+    audio_inputs*: ptr UncheckedArray[clap_audio_buffer]
+    audio_outputs*: ptr UncheckedArray[clap_audio_buffer]
     audio_inputs_count*: uint32
     audio_outputs_count*: uint32
     ##  The input event list can't be modified.

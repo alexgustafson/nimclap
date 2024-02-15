@@ -1,7 +1,7 @@
 import
   ../../plugin
 
-let CLAP_EXT_RESOURCE_DIRECTORY*: cstring = cstring"clap.resource-directory.draft/0"
+let CLAP_EXT_RESOURCE_DIRECTORY*: cstring = cstring"clap.resource-directory/1"
 
 ##  @page Resource Directory
 ##
@@ -40,7 +40,7 @@ let CLAP_EXT_RESOURCE_DIRECTORY*: cstring = cstring"clap.resource-directory.draf
 type
   clap_plugin_resource_directory* {.bycopy.} = object
     ##  Sets the directory in which the plugin can save its resources.
-    ##  The directory remains valid until it is overriden or the plugin is destroyed.
+    ##  The directory remains valid until it is overridden or the plugin is destroyed.
     ##  If path is null or blank, it clears the directory location.
     ##  path must be absolute.
     ##  [main-thread]

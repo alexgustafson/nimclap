@@ -12,6 +12,12 @@ srcDir        = "src"
 requires "nim >= 2.0.0"
 
 
+task download_clap, "download clap":
+  exec("curl -L https://github.com/free-audio/clap/archive/refs/heads/main.zip --output ./main.zip")
+  exec("unzip ./main.zip")
+  exec("rm -rf main.zip")
+  exec("mv ./clap-main ./clap")
+
 
 task generate_bindings, "generate bindings":
   exec("nim r scripts/generate_bindings.nim")
@@ -23,6 +29,9 @@ task debug, "debug simple plugin":
 
 task build, "build simple plugin":
   exec "nim compile -g --app:lib --gc:orc -d:release -o:examples/my_plugin.clap examples/my_plugin.nim"
+
+task build_hello, "build hello plugin":
+  exec "nim compile -g --app:lib --gc:orc -d:release -o:examples/hello_clap.clap examples/hello_clap.nim"
 
 task scratch, "scratch":
   exec "c2nim --dynlib --cdecl --out=scratch/plugin-template.nim scratch/plugin-template.c"

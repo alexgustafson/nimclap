@@ -1,11 +1,16 @@
 import
-  ../../plugin, ../../color, ../../stringsizes
+  ../plugin, ../color, ../stringsizes
 
 ##  This extension let the plugin query info about the track it's in.
 ##  It is useful when the plugin is created, to initialize some parameters (mix, dry, wet)
 ##  and pick a suitable configuration regarding audio port type and channel count.
 
-let CLAP_EXT_TRACK_INFO*: cstring = cstring"clap.track-info.draft/1"
+let CLAP_EXT_TRACK_INFO*: cstring = cstring"clap.track-info/1"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_TRACK_INFO_COMPAT*: cstring = cstring"clap.track-info.draft/1"
 
 const
   CLAP_TRACK_INFO_HAS_TRACK_NAME* = (1 shl 0)
@@ -35,6 +40,7 @@ type
 
   clap_host_track_info* {.bycopy.} = object
     ##  Get info about the track the plugin belongs to.
+    ##  Returns true on success and stores the result into info.
     ##  [main-thread]
     get*: proc (host: ptr clap_host; info: ptr clap_track_info): bool {.cdecl.}
 

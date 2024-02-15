@@ -25,12 +25,15 @@ type
     on_fd*: proc (plugin: ptr clap_plugin; fd: cint; flags: clap_posix_fd_flags) {.cdecl.}
 
   clap_host_posix_fd_support* {.bycopy.} = object
+    ##  Returns true on success.
     ##  [main-thread]
     register_fd*: proc (host: ptr clap_host; fd: cint; flags: clap_posix_fd_flags): bool {.
         cdecl.}
+    ##  Returns true on success.
     ##  [main-thread]
     modify_fd*: proc (host: ptr clap_host; fd: cint; flags: clap_posix_fd_flags): bool {.
         cdecl.}
+    ##  Returns true on success.
     ##  [main-thread]
     unregister_fd*: proc (host: ptr clap_host; fd: cint): bool {.cdecl.}
 

@@ -24,7 +24,12 @@ import
 
 let CLAP_EXT_AUDIO_PORTS_CONFIG*: cstring = cstring"clap.audio-ports-config"
 
-let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO*: cstring = cstring"clap.audio-ports-config-info/draft-0"
+let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO*: cstring = cstring"clap.audio-ports-config-info/1"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO_COMPAT*: cstring = cstring"clap.audio-ports-config-info/draft-0"
 
 ##  Minimalistic description of ports configuration
 
@@ -48,17 +53,18 @@ type
 
 type
   clap_plugin_audio_ports_config* {.bycopy.} = object
-    ##  gets the number of available configurations
+    ##  Gets the number of available configurations
     ##  [main-thread]
     count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
-    ##  gets information about a configuration
+    ##  Gets information about a configuration
+    ##  Returns true on success and stores the result into config.
     ##  [main-thread]
     get*: proc (plugin: ptr clap_plugin; index: uint32;
               config: ptr clap_audio_ports_config): bool {.cdecl.}
-    ##  selects the configuration designated by id
-    ##  returns true if the configuration could be applied.
+    ##  Selects the configuration designated by id
+    ##  Returns true if the configuration could be applied.
     ##  Once applied the host should scan again the audio ports.
-    ##  [main-thread,plugin-deactivated]
+    ##  [main-thread & plugin-deactivated]
     select*: proc (plugin: ptr clap_plugin; config_id: clap_id): bool {.cdecl.}
 
 
@@ -73,6 +79,7 @@ type
     current_config*: proc (plugin: ptr clap_plugin): clap_id {.cdecl.}
     ##  Get info about an audio port, for a given config_id.
     ##  This is analogous to clap_plugin_audio_ports.get().
+    ##  Returns true on success and stores the result into info.
     ##  [main-thread]
     get*: proc (plugin: ptr clap_plugin; config_id: clap_id; port_index: uint32;
               is_input: bool; info: ptr clap_audio_port_info): bool {.cdecl.}

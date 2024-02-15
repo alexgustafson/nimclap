@@ -1,5 +1,5 @@
 import
-  ../params, ../../color
+  params, ../color
 
 ##  This extension lets the host tell the plugin to display a little color based indication on the
 ##  parameter. This can be used to indicate:
@@ -11,7 +11,12 @@ import
 ##  The color semantic depends upon the host here and the goal is to have a consistent experience
 ##  across all plugins.
 
-let CLAP_EXT_PARAM_INDICATION*: cstring = cstring"clap.param-indication.draft/4"
+let CLAP_EXT_PARAM_INDICATION*: cstring = cstring"clap.param-indication/4"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_PARAM_INDICATION_COMPAT*: cstring = cstring"clap.param-indication.draft/4"
 
 const                         ##  The host doesn't have an automation for this parameter
   CLAP_PARAM_INDICATION_AUTOMATION_NONE* = 0 ##  The host has an automation for this parameter, but it isn't playing it

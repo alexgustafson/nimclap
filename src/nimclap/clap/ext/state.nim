@@ -9,6 +9,10 @@ import
 ##  values and non-parameter state. This is used to persist a plugin's state
 ##  between project reloads, when duplicating and copying plugin instances, and
 ##  for host-side preset management.
+##
+##  If you need to know if the save/load operation is meant for duplicating a plugin
+##  instance, for saving/loading a plugin preset or while saving/loading the project
+##  then consider implementing CLAP_EXT_STATE_CONTEXT in addition to CLAP_EXT_STATE.
 
 let CLAP_EXT_STATE*: cstring = cstring"clap.state"
 

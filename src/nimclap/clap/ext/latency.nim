@@ -4,12 +4,10 @@ import
 
 let CLAP_EXT_LATENCY*: cstring = cstring"clap.latency"
 
-##  The audio ports scan has to be done while the plugin is deactivated.
-
 type
   clap_plugin_latency* {.bycopy.} = object
-    ##  Returns the plugin latency.
-    ##  [main-thread]
+    ##  Returns the plugin latency in samples.
+    ##  [main-thread & active]
     get*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
 
   clap_host_latency* {.bycopy.} = object

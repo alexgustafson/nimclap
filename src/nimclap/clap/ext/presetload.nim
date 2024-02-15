@@ -1,13 +1,18 @@
 import
-  ../../plugin
+  ../plugin
 
-let CLAP_EXT_PRESET_LOAD*: cstring = cstring"clap.preset-load.draft/2"
+let CLAP_EXT_PRESET_LOAD*: cstring = cstring"clap.preset-load/2"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_PRESET_LOAD_COMPAT*: cstring = cstring"clap.preset-load.draft/2"
 
 type
   clap_plugin_preset_load* {.bycopy.} = object
     ##  Loads a preset in the plugin native preset file format from a location.
     ##  The preset discovery provider defines the location and load_key to be passed to this function.
-    ##
+    ##  Returns true on success.
     ##  [main-thread]
     from_location*: proc (plugin: ptr clap_plugin; location_kind: uint32;
                         location: cstring; load_key: cstring): bool {.cdecl.}

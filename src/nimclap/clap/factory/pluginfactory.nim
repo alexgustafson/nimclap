@@ -1,4 +1,4 @@
-import host
+import ../host
 import
   ../plugin
 

@@ -1,7 +1,7 @@
 import
   ../../plugin, ../../events, ../../stringsizes
 
-let CLAP_EXT_TUNING*: cstring = cstring"clap.tuning.draft/2"
+let CLAP_EXT_TUNING*: cstring = cstring"clap.tuning/2"
 
 ##  Use clap_host_event_registry->query(host, CLAP_EXT_TUNING, &space_id) to know the event space.
 ##
@@ -53,6 +53,7 @@ type
     ##  [main-thread]
     get_tuning_count*: proc (host: ptr clap_host): uint32 {.cdecl.}
     ##  Gets info about a tuning
+    ##  Returns true on success and stores the result into info.
     ##  [main-thread]
     get_info*: proc (host: ptr clap_host; tuning_index: uint32;
                    info: ptr clap_tuning_info): bool {.cdecl.}

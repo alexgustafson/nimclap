@@ -40,19 +40,24 @@
 ##
 
 import
-  ../../private/std, ../../private/macros, ../../version
+  ../private/std, ../private/macros, ../timestamp, ../version, ../universalpluginid
 
 ##  Use it to retrieve const clap_preset_discovery_factory_t* from
 ##  clap_plugin_entry.get_factory()
 
-let CLAP_PRESET_DISCOVERY_FACTORY_ID*: cstring = cstring"clap.preset-discovery-factory/draft-2"
+let CLAP_PRESET_DISCOVERY_FACTORY_ID*: cstring = cstring"clap.preset-discovery-factory/2"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_PRESET_DISCOVERY_FACTORY_ID_COMPAT*: cstring = cstring"clap.preset-discovery-factory/draft-2"
 
 type
   clap_preset_discovery_location_kind* = enum ##  The preset are located in a file on the OS filesystem.
                                            ##  The location is then a path which works with the OS file system functions (open, stat, ...)
                                            ##  So both '/' and '\' shall work on Windows as a separator.
     CLAP_PRESET_DISCOVERY_LOCATION_FILE = 0, ##  The preset is bundled within the plugin DSO itself.
-                                          ##  The location must then be null, as the preset are within the plugin itsel and then the plugin
+                                          ##  The location must then be null, as the preset are within the plugin itself and then the plugin
                                           ##  will act as a preset container.
     CLAP_PRESET_DISCOVERY_LOCATION_PLUGIN = 1
 
@@ -66,30 +71,6 @@ type
                                                 ##  demo mode.
     CLAP_PRESET_DISCOVERY_IS_DEMO_CONTENT = 1 shl 2, ##  This preset is a user's favorite
     CLAP_PRESET_DISCOVERY_IS_FAVORITE = 1 shl 3
-
-
-##  TODO: move clap_timestamp_t, CLAP_TIMESTAMP_UNKNOWN and clap_plugin_id_t to parent files once we
-##  settle with preset discovery
-##  This type defines a timestamp: the number of seconds since UNIX EPOCH.
-##  See C's time_t time(time_t *).
-
-type
-  clap_timestamp* = uint64
-
-##  Value for unknown timestamp.
-
-let CLAP_TIMESTAMP_UNKNOWN*: clap_timestamp = 0
-
-##  Pair of plugin ABI and plugin identifier
-
-type
-  clap_plugin_id* {.bycopy.} = object
-    ##  The plugin ABI name, in lowercase.
-    ##  eg: "clap"
-    abi*: cstring
-    ##  The plugin ID, for example "com.u-he.Diva".
-    ##  If the ABI rely upon binary plugin ids, then they shall be hex encoded (lower case).
-    id*: cstring
 
 
 ##  Receiver that receives the metadata for a single preset file.
@@ -119,12 +100,12 @@ type
     ##  the plugin wants but it could also be some other unique id like a database primary key or a
     ##  binary offset. It's use is entirely up to the plug-in.
     ##
-    ##  If the function returns false, the the provider must stop calling back into the receiver.
+    ##  If the function returns false, then the provider must stop calling back into the receiver.
     begin_preset*: proc (receiver: ptr clap_preset_discovery_metadata_receiver;
                        name: cstring; load_key: cstring): bool {.cdecl.}
     ##  Adds a plug-in id that this preset can be used with.
     add_plugin_id*: proc (receiver: ptr clap_preset_discovery_metadata_receiver;
-                        plugin_id: ptr clap_plugin_id) {.cdecl.}
+                        plugin_id: ptr clap_universal_plugin_id) {.cdecl.}
     ##  Sets the sound pack to which the preset belongs to.
     set_soundpack_id*: proc (receiver: ptr clap_preset_discovery_metadata_receiver;
                            soundpack_id: cstring) {.cdecl.}
@@ -238,6 +219,7 @@ type
     ##  Destroys the preset provider
     destroy*: proc (provider: ptr clap_preset_discovery_provider) {.cdecl.}
     ##  reads metadata from the given file and passes them to the metadata receiver
+    ##  Returns true on success.
     get_metadata*: proc (provider: ptr clap_preset_discovery_provider;
                        location_kind: uint32; location: cstring; metadata_receiver: ptr clap_preset_discovery_metadata_receiver): bool {.
         cdecl.}

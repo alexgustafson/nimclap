@@ -1,7 +1,7 @@
 import
   ../../plugin, ../../events, ../../stringsizes
 
-let CLAP_EXT_TRIGGERS*: cstring = cstring"clap.triggers.draft/0"
+let CLAP_EXT_TRIGGERS*: cstring = cstring"clap.triggers/1"
 
 ##  @page Trigger events
 ##
@@ -73,7 +73,6 @@ type
     ##  [main-thread]
     count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
     ##  Copies the trigger's info to trigger_info and returns true on success.
-    ##  Returns true on success.
     ##  [main-thread]
     get_info*: proc (plugin: ptr clap_plugin; index: uint32;
                    trigger_info: ptr clap_trigger_info): bool {.cdecl.}

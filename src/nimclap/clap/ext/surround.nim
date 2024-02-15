@@ -1,5 +1,5 @@
 import
-  ../../plugin
+  ../plugin
 
 ##  This extension can be used to specify the channel mapping used by the plugin.
 ##
@@ -23,7 +23,12 @@ import
 ##  3. host calls clap_plugin_surround->get_channel_map()
 ##  4. host activates the plugin and can start processing audio
 
-let CLAP_EXT_SURROUND*: cstring = cstring"clap.surround.draft/3"
+let CLAP_EXT_SURROUND*: cstring = cstring"clap.surround/4"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_SURROUND_COMPAT*: cstring = cstring"clap.surround.draft/4"
 
 let CLAP_PORT_SURROUND*: cstring = cstring"surround"
 
@@ -49,18 +54,19 @@ const
 
 type
   clap_plugin_surround* {.bycopy.} = object
-    ##  Stores into the channel_map array, the surround identifier of each channel.
+    ##  Checks if a given channel mask is supported.
+    ##  The channel mask is a bitmask, for example:
+    ##    (1 << CLAP_SURROUND_FL) | (1 << CLAP_SURROUND_FR) | ...
+    ##  [main-thread]
+    is_channel_mask_supported*: proc (plugin: ptr clap_plugin; channel_mask: uint64): bool {.
+        cdecl.}
+    ##  Stores the surround identifier of each channel into the channel_map array.
     ##  Returns the number of elements stored in channel_map.
-    ##
-    ##  config_id: the configuration id, see clap_plugin_audio_ports_config.
-    ##  If config_id is CLAP_INVALID_ID, then this function queries the current port info.
+    ##  channel_map_capacity must be greater or equal to the channel count of the given port.
     ##  [main-thread]
     get_channel_map*: proc (plugin: ptr clap_plugin; is_input: bool;
                           port_index: uint32; channel_map: ptr uint8;
                           channel_map_capacity: uint32): uint32 {.cdecl.}
-    ##  Informs the plugin that the host preferred channel map has changed.
-    ##  [main-thread]
-    changed*: proc (plugin: ptr clap_plugin) {.cdecl.}
 
   clap_host_surround* {.bycopy.} = object
     ##  Informs the host that the channel map has changed.

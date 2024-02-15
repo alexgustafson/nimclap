@@ -10,7 +10,7 @@ import
 ##  The plugin is responsible for keeping its audio processor and its GUI in sync.
 ##
 ##  The host can at any time read parameters' value on the [main-thread] using
-##  @ref clap_plugin_params.value().
+##  @ref clap_plugin_params.get_value().
 ##
 ##  There are two options to communicate parameter value changes, and they are not concurrent.
 ##  - send automation points during clap_plugin.process()
@@ -157,7 +157,10 @@ const                         ##  Is this param stepped? (integer values only)
                                             ##
                                             ##  A simple example would be a DC Offset, changing it will change the output signal and must be
                                             ##  processed.
-  CLAP_PARAM_REQUIRES_PROCESS* = 1 shl 15
+  CLAP_PARAM_REQUIRES_PROCESS* = 1 shl 15 ##  This parameter represents an enumerated value.
+                                     ##  If you set this flag, then you must set CLAP_PARAM_IS_STEPPED too.
+                                     ##  All values from min to max must not have a blank value_to_text().
+  CLAP_PARAM_IS_ENUM* = 1 shl 16
 
 type
   clap_param_info_flags* = uint32
@@ -213,22 +216,27 @@ type
     ##  Returns the number of parameters.
     ##  [main-thread]
     count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
-    ##  Copies the parameter's info to param_info. Returns true on success.
+    ##  Copies the parameter's info to param_info.
+    ##  Returns true on success.
     ##  [main-thread]
     get_info*: proc (plugin: ptr clap_plugin; param_index: uint32;
                    param_info: ptr clap_param_info): bool {.cdecl.}
-    ##  Writes the parameter's current value to out_value. Returns true on success.
+    ##  Writes the parameter's current value to out_value.
+    ##  Returns true on success.
     ##  [main-thread]
     get_value*: proc (plugin: ptr clap_plugin; param_id: clap_id;
                     out_value: ptr cdouble): bool {.cdecl.}
     ##  Fills out_buffer with a null-terminated UTF-8 string that represents the parameter at the
-    ##  given 'value' argument. eg: "2.3 kHz". Returns true on success. The host should always use
-    ##  this to format parameter values before displaying it to the user. [main-thread]
+    ##  given 'value' argument. eg: "2.3 kHz". The host should always use this to format parameter
+    ##  values before displaying it to the user.
+    ##  Returns true on success.
+    ##  [main-thread]
     value_to_text*: proc (plugin: ptr clap_plugin; param_id: clap_id; value: cdouble;
                         out_buffer: cstring; out_buffer_capacity: uint32): bool {.
         cdecl.}
     ##  Converts the null-terminated UTF-8 param_value_text into a double and writes it to out_value.
-    ##  Returns true on success. The host can use this to convert user input into a parameter value.
+    ##  The host can use this to convert user input into a parameter value.
+    ##  Returns true on success.
     ##  [main-thread]
     text_to_value*: proc (plugin: ptr clap_plugin; param_id: clap_id;
                         param_value_text: cstring; out_value: ptr cdouble): bool {.

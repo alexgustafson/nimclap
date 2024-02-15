@@ -3,7 +3,7 @@ import
 
 ##  This extension lets the host add and remove audio ports to the plugin.
 
-let CLAP_EXT_EXTENSIBLE_AUDIO_PORTS*: cstring = cstring"clap.extensible-audio-ports.draft0"
+let CLAP_EXT_EXTENSIBLE_AUDIO_PORTS*: cstring = cstring"clap.extensible-audio-ports/1"
 
 type
   clap_plugin_extensible_audio_ports* {.bycopy.} = object

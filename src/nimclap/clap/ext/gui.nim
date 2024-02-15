@@ -123,7 +123,7 @@ type
     ##
     ##  After this call, the GUI may not be visible yet; don't forget to call show().
     ##
-    ##  Returns true if the GUI is successfuly created.
+    ##  Returns true if the GUI is successfully created.
     ##  [main-thread]
     create*: proc (plugin: ptr clap_plugin; api: cstring; is_floating: bool): bool {.cdecl.}
     ##  Free all resources associated with the gui.
@@ -149,27 +149,24 @@ type
     get_size*: proc (plugin: ptr clap_plugin; width: ptr uint32; height: ptr uint32): bool {.
         cdecl.}
     ##  Returns true if the window is resizeable (mouse drag).
-    ##  Only for embedded windows.
-    ##  [main-thread]
+    ##  [main-thread & !floating]
     can_resize*: proc (plugin: ptr clap_plugin): bool {.cdecl.}
     ##  Returns true if the plugin can provide hints on how to resize the window.
-    ##  [main-thread]
+    ##  [main-thread & !floating]
     get_resize_hints*: proc (plugin: ptr clap_plugin;
                            hints: ptr clap_gui_resize_hints): bool {.cdecl.}
     ##  If the plugin gui is resizable, then the plugin will calculate the closest
     ##  usable size which fits in the given size.
     ##  This method does not change the size.
     ##
-    ##  Only for embedded windows.
-    ##
     ##  Returns true if the plugin could adjust the given size.
-    ##  [main-thread]
+    ##  [main-thread & !floating]
     adjust_size*: proc (plugin: ptr clap_plugin; width: ptr uint32; height: ptr uint32): bool {.
         cdecl.}
-    ##  Sets the window size. Only for embedded windows.
+    ##  Sets the window size.
     ##
     ##  Returns true if the plugin could resize its window to the given size.
-    ##  [main-thread]
+    ##  [main-thread & !floating]
     set_size*: proc (plugin: ptr clap_plugin; width: uint32; height: uint32): bool {.cdecl.}
     ##  Embeds the plugin window into the given window.
     ##
@@ -199,7 +196,7 @@ type
 
   clap_host_gui* {.bycopy.} = object
     ##  The host should call get_resize_hints() again.
-    ##  [thread-safe]
+    ##  [thread-safe & !floating]
     resize_hints_changed*: proc (host: ptr clap_host) {.cdecl.}
     ##  Request the host to resize the client area to width, height.
     ##  Return true if the new size is accepted, false otherwise.
@@ -208,8 +205,7 @@ type
     ##  Note: if not called from the main thread, then a return value simply means that the host
     ##  acknowledged the request and will process it asynchronously. If the request then can't be
     ##  satisfied then the host will call set_size() to revert the operation.
-    ##
-    ##  [thread-safe]
+    ##  [thread-safe & !floating]
     request_resize*: proc (host: ptr clap_host; width: uint32; height: uint32): bool {.
         cdecl.}
     ##  Request the host to show the plugin gui.

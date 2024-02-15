@@ -1,5 +1,5 @@
 import
-  ../../plugin, ../../stringsizes
+  ../plugin, ../stringsizes
 
 ##  This extension let the plugin provide a structured way of mapping parameters to an hardware
 ##  controller.
@@ -29,7 +29,12 @@ import
 ##  Pressing that button once gets you to the first page of the section.
 ##  Press it again to cycle through the section's pages.
 
-let CLAP_EXT_REMOTE_CONTROLS*: cstring = cstring"clap.remote-controls.draft/2"
+let CLAP_EXT_REMOTE_CONTROLS*: cstring = cstring"clap.remote-controls/2"
+
+##  The latest draft is 100% compatible
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_REMOTE_CONTROLS_COMPAT*: cstring = cstring"clap.remote-controls.draft/2"
 
 const
   CLAP_REMOTE_CONTROLS_COUNT* = 8
@@ -49,6 +54,7 @@ type
     ##  [main-thread]
     count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
     ##  Get a page by index.
+    ##  Returns true on success and stores the result into page.
     ##  [main-thread]
     get*: proc (plugin: ptr clap_plugin; page_index: uint32;
               page: ptr clap_remote_controls_page): bool {.cdecl.}

@@ -1,16 +1,21 @@
 import
-  ../../plugin
+  ../plugin
 
 ##  This extension lets the host and plugin exchange menu items and let the plugin ask the host to
 ##  show its context menu.
 
-let CLAP_EXT_CONTEXT_MENU*: cstring = cstring"clap.context-menu.draft/0"
+let CLAP_EXT_CONTEXT_MENU*: cstring = cstring"clap.context-menu/1"
+
+##  The latest draft is 100% compatible.
+##  This compat ID may be removed in 2026.
+
+let CLAP_EXT_CONTEXT_MENU_COMPAT*: cstring = cstring"clap.context-menu.draft/0"
 
 ##  There can be different target kind for a context menu
 
 const
   CLAP_CONTEXT_MENU_TARGET_KIND_GLOBAL* = 0
-  CLAP_CONTEXT_MENU_TARGET_KIND_PARAM* = 1 ##  TODO: kind trigger once the trigger ext is marked as stable
+  CLAP_CONTEXT_MENU_TARGET_KIND_PARAM* = 1
 
 ##  Describes the context menu target
 
@@ -72,7 +77,8 @@ type
   clap_context_menu_builder* {.bycopy.} = object
     ctx*: pointer
     ##  Adds an entry to the menu.
-    ##  entry_data type is determined by entry_kind.
+    ##  item_data type is determined by item_kind.
+    ##  Returns true on success.
     add_item*: proc (builder: ptr clap_context_menu_builder;
                    item_kind: clap_context_menu_item_kind; item_data: pointer): bool {.
         cdecl.}
@@ -83,11 +89,13 @@ type
   clap_plugin_context_menu* {.bycopy.} = object
     ##  Insert plugin's menu items into the menu builder.
     ##  If target is null, assume global context.
+    ##  Returns true on success.
     ##  [main-thread]
     populate*: proc (plugin: ptr clap_plugin; target: ptr clap_context_menu_target;
                    builder: ptr clap_context_menu_builder): bool {.cdecl.}
     ##  Performs the given action, which was previously provided to the host via populate().
     ##  If target is null, assume global context.
+    ##  Returns true on success.
     ##  [main-thread]
     perform*: proc (plugin: ptr clap_plugin; target: ptr clap_context_menu_target;
                   action_id: clap_id): bool {.cdecl.}
@@ -95,11 +103,13 @@ type
   clap_host_context_menu* {.bycopy.} = object
     ##  Insert host's menu items into the menu builder.
     ##  If target is null, assume global context.
+    ##  Returns true on success.
     ##  [main-thread]
     populate*: proc (host: ptr clap_host; target: ptr clap_context_menu_target;
                    builder: ptr clap_context_menu_builder): bool {.cdecl.}
     ##  Performs the given action, which was previously provided to the plugin via populate().
     ##  If target is null, assume global context.
+    ##  Returns true on success.
     ##  [main-thread]
     perform*: proc (host: ptr clap_host; target: ptr clap_context_menu_target;
                   action_id: clap_id): bool {.cdecl.}
@@ -112,6 +122,7 @@ type
     ##  If the plugin is using embedded GUI, then x and y are relative to the plugin's window,
     ##  otherwise they're absolute coordinate, and screen index might be set accordingly.
     ##  If target is null, assume global context.
+    ##  Returns true on success.
     ##  [main-thread]
     popup*: proc (host: ptr clap_host; target: ptr clap_context_menu_target;
                 screen_index: int32; x: int32; y: int32): bool {.cdecl.}

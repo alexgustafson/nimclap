@@ -38,12 +38,11 @@ type
     flags*: uint32
     channel_count*: uint32
     ##  If null or empty then it is unspecified (arbitrary audio).
-    ##  This filed can be compared against:
+    ##  This field can be compared against:
     ##  - CLAP_PORT_MONO
     ##  - CLAP_PORT_STEREO
     ##  - CLAP_PORT_SURROUND (defined in the surround extension)
     ##  - CLAP_PORT_AMBISONIC (defined in the ambisonic extension)
-    ##  - CLAP_PORT_CV (defined in the cv extension)
     ##
     ##  An extension can provide its own port type and way to inspect the channels.
     port_type*: cstring
@@ -57,10 +56,11 @@ type
 
 type
   clap_plugin_audio_ports* {.bycopy.} = object
-    ##  number of ports, for either input or output
+    ##  Number of ports, for either input or output
     ##  [main-thread]
     count*: proc (plugin: ptr clap_plugin; is_input: bool): uint32 {.cdecl.}
-    ##  get info about about an audio port.
+    ##  Get info about an audio port.
+    ##  Returns true on success and stores the result into info.
     ##  [main-thread]
     get*: proc (plugin: ptr clap_plugin; index: uint32; is_input: bool;
               info: ptr clap_audio_port_info): bool {.cdecl.}

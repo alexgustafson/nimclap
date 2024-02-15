@@ -108,27 +108,74 @@ const ##  NOTE_ON and NOTE_OFF represent a key pressed and key released event, r
   CLAP_EVENT_MIDI2* = 12        ##  raw midi 2 event; clap_event_midi2
 
 ##  Note on, off, end and choke events.
+##
+##  Clap addresses notes and voices using the 4-value tuple
+##  (port, channel, key, note_id). Note on/off/end/choke
+##  events and parameter modulation messages are delivered with
+##  these values populated.
+##
+##  Values in a note and voice address are either >= 0 if they
+##  are specified, or -1 to indicate a wildcard. A wildcard
+##  means a voice with any value in that part of the tuple
+##  matches the message.
+##
+##  For instance, a (PCKN) of (0, 3, -1, -1) will match all voices
+##  on channel 3 of port 0. And a PCKN of (-1, 0, 60, -1) will match
+##  all channel 0 key 60 voices, independent of port or note id.
+##
+##  Especially in the case of note-on note-off pairs, and in the
+##  absence of voice stacking or polyphonic modulation, a host may
+##  choose to issue a note id only at note on. So you may see a
+##  message stream like
+##
+##  CLAP_EVENT_NOTE_ON  [0,0,60,184]
+##  CLAP_EVENT_NOTE_OFF [0,0,60,-1]
+##
+##  and the host will expect the first voice to be released.
+##  Well constructed plugins will search for voices and notes using
+##  the entire tuple.
+##
 ##  In the case of note choke or end events:
 ##  - the velocity is ignored.
-##  - key and channel are used to match active notes, a value of -1 matches all.
+##  - key and channel are used to match active notes
+##  - note_id is optionally provided by the host
 
 type
   clap_event_note* {.bycopy.} = object
     header*: clap_event_header
     note_id*: int32
-    ##  -1 if unspecified, otherwise >=0
+    ##  host provided note id >= 0, or -1 if unspecified or wildcard
     port_index*: int16
+    ##  port index from ext/note-ports; -1 for wildcard
     channel*: int16
-    ##  0..15
+    ##  0..15, same as MIDI1 Channel Number, -1 for wildcard
     key*: int16
-    ##  0..127
+    ##  0..127, same as MIDI1 Key Number (60==Middle C), -1 for wildcard
     velocity*: cdouble
     ##  0..1
 
 
+##  Note Expressions are well named modifications of a voice targeted to
+##  voices using the same wildcard rules described above. Note Expressions are delivered
+##  as sample accurate events and should be applied at the sample when received.
+##
+##  Note expressions are a statement of value, not cumulative. A PAN event of 0 followed by 1
+##  followed by 0.5 would pan hard left, hard right, and center. They are intended as
+##  an offset from the non-note-expression voice default. A voice which had a volume of
+##  -20db absent note expressions which received a +4db note expression would move the
+##  voice to -16db.
+##
+##  A plugin which receives a note expression at the same sample as a NOTE_ON event
+##  should apply that expression to all generated samples. A plugin which receives
+##  a note expression after a NOTE_ON event should initiate the voice with default
+##  values and then apply the note expression when received. A plugin may make a choice
+##  to smooth note expression streams.
+
 const                         ##  with 0 < x <= 4, plain = 20 * log(x)
   CLAP_NOTE_EXPRESSION_VOLUME* = 0 ##  pan, 0 left, 0.5 center, 1 right
-  CLAP_NOTE_EXPRESSION_PAN* = 1 ##  relative tuning in semitone, from -120 to +120
+  CLAP_NOTE_EXPRESSION_PAN* = 1 ##  Relative tuning in semitones, from -120 to +120. Semitones are in
+                             ##  equal temperament and are doubles; the resulting note would be
+                             ##  retuned by `100 * evt->value` cents.
   CLAP_NOTE_EXPRESSION_TUNING* = 2 ##  0..1
   CLAP_NOTE_EXPRESSION_VIBRATO* = 3
   CLAP_NOTE_EXPRESSION_EXPRESSION* = 4
@@ -140,7 +187,8 @@ type
   clap_event_note_expression* {.bycopy.} = object
     header*: clap_event_header
     expression_id*: clap_note_expression
-    ##  target a specific note_id, port, key and channel, -1 for global
+    ##  target a specific note_id, port, key and channel, with
+    ##  -1 meaning wildcard, per the wildcard discussion above
     note_id*: int32
     port_index*: int16
     channel*: int16
@@ -155,7 +203,8 @@ type
     ##  @ref clap_param_info.id
     cookie*: pointer
     ##  @ref clap_param_info.cookie
-    ##  target a specific note_id, port, key and channel, -1 for global
+    ##  target a specific note_id, port, key and channel, with
+    ##  -1 meaning wildcard, per the wildcard discussion above
     note_id*: int32
     port_index*: int16
     channel*: int16
@@ -169,7 +218,8 @@ type
     ##  @ref clap_param_info.id
     cookie*: pointer
     ##  @ref clap_param_info.cookie
-    ##  target a specific note_id, port, key and channel, -1 for global
+    ##  target a specific note_id, port, key and channel, with
+    ##  -1 meaning wildcard, per the wildcard discussion above
     note_id*: int32
     port_index*: int16
     channel*: int16

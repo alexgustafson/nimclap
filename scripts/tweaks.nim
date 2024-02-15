@@ -31,14 +31,27 @@ let CLAP_VERSION*: clap_version = clap_version(
 """
   unchecked_array_char: string = "UncheckedArray[char] = "
   unchecked_array_char_replace: string = "cstring = cstring"
+  audio_buffer_32: string = "data32*: ptr ptr cfloat"
+  audio_buffer_32_replace: string = "data32*: ptr UncheckedArray[UncheckedArray[cfloat]]"
+  audio_buffer_64: string = "data64*: ptr ptr cdouble"
+  audio_buffer_64_replace: string = "data64*: ptr UncheckedArray[UncheckedArray[cdouble]]"
+  audio_process_inputs: string = "audio_inputs*: ptr clap_audio_buffer"
+  audio_process_inputs_replace: string = "audio_inputs*: ptr UncheckedArray[clap_audio_buffer]"
+  audio_process_outputs: string = "audio_outputs*: ptr clap_audio_buffer"
+  audio_process_outputs_replace: string = "audio_outputs*: ptr UncheckedArray[clap_audio_buffer]"
+
   replace_strings* = @[
     (version_text, version_replace),
     (unchecked_array_char, unchecked_array_char_replace),
+    (audio_buffer_32, audio_buffer_32_replace),
+    (audio_buffer_64, audio_buffer_64_replace),
+    (audio_process_inputs, audio_process_inputs_replace),
+    (audio_process_outputs, audio_process_outputs_replace),
   ]
 
   additional_imports* = {
     "plugin": "import version\n",
-    "pluginfactory": "import host\n",
+    "pluginfactory": "import ../host\n",
     "latency": "import ../host\n",
     "log": "import ../host\n",
     "threadcheck": "import ../host\n",

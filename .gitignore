@@ -1,3 +1,5 @@
 clap
 !src/nimclap/clap
 
+/tests/clap-validator/
+!.idea/runConfigurations

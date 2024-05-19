@@ -3,5 +3,6 @@ clap
 
 /tests/clap-validator/
 !.idea/runConfigurations
-*.clap/
-*.clap-host/
+*./clap/
+*./clap-host/
+/examples/*.clap

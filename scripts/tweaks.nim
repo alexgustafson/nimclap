@@ -39,6 +39,19 @@ let CLAP_VERSION*: clap_version = clap_version(
   audio_process_inputs_replace: string = "audio_inputs*: ptr UncheckedArray[clap_audio_buffer]"
   audio_process_outputs: string = "audio_outputs*: ptr clap_audio_buffer"
   audio_process_outputs_replace: string = "audio_outputs*: ptr UncheckedArray[clap_audio_buffer]"
+  entry_clap_entry: string = "let clap_entry*: clap_plugin_entry"
+  entry_clap_entry_replace: string = ""
+  version_init: string = """
+  CLAP_VERSION_INIT* = (cast[uint32](CLAP_VERSION_MAJOR),
+    cast[uint32](CLAP_VERSION_MINOR), cast[uint32](CLAP_VERSION_REVISION))
+"""
+  version_init_replace: string = """
+  CLAP_VERSION_INIT*: clap_version = clap_version(
+    major: CLAP_VERSION_MAJOR,
+    minor: CLAP_VERSION_MINOR,
+    revision: CLAP_VERSION_REVISION
+  )
+"""
 
   replace_strings* = @[
     (version_text, version_replace),
@@ -47,6 +60,8 @@ let CLAP_VERSION*: clap_version = clap_version(
     (audio_buffer_64, audio_buffer_64_replace),
     (audio_process_inputs, audio_process_inputs_replace),
     (audio_process_outputs, audio_process_outputs_replace),
+    (entry_clap_entry, entry_clap_entry_replace),
+    (version_init, version_init_replace),
   ]
 
   additional_imports* = {

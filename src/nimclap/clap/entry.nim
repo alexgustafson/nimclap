@@ -124,4 +124,4 @@ type
 
 ##  Entry point
 
-let clap_entry*: clap_plugin_entry
+

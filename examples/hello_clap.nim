@@ -10,7 +10,7 @@ type Voice = object
 
 type MyPlugin = object
   plugin: ClapPlugin
-  host: ClapHost
+  host: ptr ClapHost
   sampleRate: float
   voices: seq[Voice]
 
@@ -32,34 +32,85 @@ let pluginDescriptor* {.exportc.}: ClapPluginDescriptor = ClapPluginDescriptor(
   ])
 )
 
+let myPluginExtensionNotePorts = ClapPluginNotePorts(
+  count: proc(plugin: ptr ClapPlugin, isInput: bool): uint32 {.cdecl.} = 1,
+  get: proc(plugin: ptr ClapPlugin, index: uint32, isInput: bool, info: ptr ClapNotePortInfo): bool {.cdecl} =
+    if not isInput or index:
+      return false
+    info.id = 0,
+    info.name = cast[array[CLAP_NAME_SIZE, char]]("My Port Name")
+
+)
 
 
+let pluginClass: ClapPlugin = ClapPlugin(
+  desc: pluginDescriptor.addr,
+  plugin_data: nil,
+  init: proc(plugin: ptr clap_plugin): bool {.cdecl.} =
+    #var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+    return true,
+  destroy: proc(plugin: ptr ClapPlugin) {.cdecl.} =
+    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+    deallocShared(pluginData),
+  activate: proc(plugin: ptr ClapPlugin; sampleRate: float; minimumFramesCount: uint32; maximunFramesCount: uint32): bool {.cdecl.} =
+    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+    pluginData.sampleRate = sampleRate
+    return true,
+  deactivate: proc(plugin: ptr ClapPlugin) {.cdecl.} =
+    discard,
+  start_processing: proc(plugin: ptr ClapPlugin): bool {.cdecl.} =
+    return true,
+  stop_processing: proc(plugin: ptr ClapPlugin) {.cdecl.} =
+    discard,
+  reset: proc(plugin: ptr ClapPlugin) {.cdecl.} =
+    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+    pluginData.voices.setLen(0),
+  process: proc (plugin: ptr clap_plugin; process: ptr clap_process): ClapProcessStatus {.cdecl.} =
+    ## var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+    ## todo
+    return CLAP_PROCESS_CONTINUE,
+  get_extension: proc (plugin: ptr clap_plugin; id: cstring): pointer {.cdecl.} =
+    if id == CLAP_EXT_NOTE_PORTS:
+      return myPluginExtensionNotePorts
+    return nil,
+  on_main_thread: proc (plugin: ptr clap_plugin) {.cdecl.} =
+    discard
+)
 
-proc getPluginCount(factory: ptr ClapPluginFactory): uint32 =
+
+proc getMyPluginCount(factory: ptr ClapPluginFactory): uint32 {.cdecl.} =
   return 1
 
-proc getPluginDescriptor(factory: ptr ClapPluginFactory, index: uint32): ptr ClapPluginDescriptor =
+proc getMyPluginDescriptor(factory: ptr ClapPluginFactory; index: uint32): ptr ClapPluginDescriptor {.cdecl.} =
   return if index == 0 : addr pluginDescriptor else: nil
 
-proc createPlugin(
+
+proc createMyPlugin(
   factory: ptr ClapPluginFactory,
   host: ptr ClapHost,
   pluginId: cstring,
-): ptr ClapPlugin =
-  if not clap_version_is_compatible(host.clapVersion) or not pluginId == pluginDescriptor.id:
+): ptr ClapPlugin {.cdecl.} =
+  if not clap_version_is_compatible(host.clapVersion) or pluginId != pluginDescriptor.id:
     return nil
 
-  var plugin: MyPlugin = cast[ptr MyPlugin](allocShared0(sizeof(MyPlugin)))
+  var myPlugin: MyPlugin = cast[MyPlugin](allocShared0(sizeof(MyPlugin)))
+  myPlugin.host = host
+  myPlugin.plugin = pluginClass
+  myPlugin.plugin.plugin_data = cast[pointer](myPlugin.addr)
+  return myPlugin.plugin.addr
 
 
-const pluginFactory: ClapPluginFactory = {
-  get_plugin_count: getPluginCount,
-  get_plugin_descriptor: getPluginDescriptor,
-  create_plugin: createPlugin,
-}
+var pluginFactory: ClapPluginFactory = ClapPluginFactory(
+  get_plugin_count: getMyPluginCount,
+  get_plugin_descriptor: getMyPluginDescriptor,
+  create_plugin: createMyPlugin,
+)
 
 
-const clap_entry* {.exportc, cdecl, dynlib.}: clap_plugin_entry = {
+var clap_entry* {.exportc, dynlib.}: ClapPluginEntry = ClapPluginEntry(
     clap_version: CLAP_VERSION_INIT,
-    help: "Clap",
-}
+    init: proc(plugin_path: cstring): bool {.cdecl.} =
+      return true,
+    get_factory: proc(factoryId: cstring): pointer {.cdecl.} =
+      return if factoryId == pluginDescriptor.id: cast[pointer](pluginFactory.addr) else: nil,
+)

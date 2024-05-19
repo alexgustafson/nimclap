@@ -63,7 +63,6 @@ type
 
     ClapPluginDescriptor* = clap_plugin_descriptor
     ClapPlugin* = clap_plugin
-    ClapPluginRef* = ref ClapPlugin
     ClapHost* = clap_host
     ClapHostLatency* = clap_host_latency
     ClapPluginAudioPorts* = clap_plugin_audio_ports

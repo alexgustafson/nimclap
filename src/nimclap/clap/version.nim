@@ -14,9 +14,12 @@ type
 const
   CLAP_VERSION_MAJOR* = 1
   CLAP_VERSION_MINOR* = 2
-  CLAP_VERSION_REVISION* = 0
-  CLAP_VERSION_INIT* = (cast[uint32](CLAP_VERSION_MAJOR),
-    cast[uint32](CLAP_VERSION_MINOR), cast[uint32](CLAP_VERSION_REVISION))
+  CLAP_VERSION_REVISION* = 1
+  CLAP_VERSION_INIT*: clap_version = clap_version(
+    major: CLAP_VERSION_MAJOR,
+    minor: CLAP_VERSION_MINOR,
+    revision: CLAP_VERSION_REVISION
+  )
 
 template CLAP_VERSION_LT*(maj, min, rev: untyped): untyped =
   ((CLAP_VERSION_MAJOR < (maj)) or

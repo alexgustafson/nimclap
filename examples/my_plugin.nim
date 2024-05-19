@@ -123,19 +123,20 @@ let myPluginState: ClapPluginState = ClapPluginState(
 proc myPluginInit(plugin: ptr ClapPlugin): bool {.cdecl.} =
   var pluginData: ptr MyPluginData = cast[ptr MyPluginData](plugin.plugin_data)
   
-  # pluginData.host_log = cast[ptr ClapHostLog](pluginData.host.get_extension(pluginData.host, CLAP_EXT_LOG))
-  # pluginData.host_thread_check = cast[ptr ClapHostThreadCheck](pluginData.host.get_extension(pluginData.host, CLAP_EXT_THREAD_CHECK))
-  # pluginData.host_state = cast[ptr ClapHostState](pluginData.host.get_extension(pluginData.host, CLAP_EXT_STATE))
-  # pluginData.host_latency = cast[ptr ClapHostLatency](pluginData.host.get_extension(pluginData.host, CLAP_EXT_LATENCY))  
+  pluginData.host_log = cast[ptr ClapHostLog](pluginData.host.get_extension(pluginData.host, CLAP_EXT_LOG))
+  pluginData.host_thread_check = cast[ptr ClapHostThreadCheck](pluginData.host.get_extension(pluginData.host, CLAP_EXT_THREAD_CHECK))
+  pluginData.host_state = cast[ptr ClapHostState](pluginData.host.get_extension(pluginData.host, CLAP_EXT_STATE))
+  pluginData.host_latency = cast[ptr ClapHostLatency](pluginData.host.get_extension(pluginData.host, CLAP_EXT_LATENCY))
   return true
 
 proc myPluginDestroy(plugin: ptr ClapPlugin) {.cdecl.} =
+
   var pluginData: ptr MyPluginData = cast[ptr MyPluginData](plugin.plugin_data)
   dealloc pluginData
 
 proc myPluginActivate(plugin: ptr ClapPlugin, sampleRate: cdouble, minFramesCount: uint32, maxFramesCount: uint32): bool {.cdecl.} =
   var pluginData: ptr MyPluginData = cast[ptr MyPluginData](plugin.plugin_data)
-  # pluginData.sampleRate = sampleRate
+  pluginData.sampleRate = sampleRate
   return true
 
 proc myPluginDeactivate(plugin: ptr ClapPlugin) {.cdecl.} =
@@ -220,13 +221,13 @@ proc myPluginProcess(plugin: ptr ClapPlugin; process: ptr ClapProcess): ClapProc
   return CLAP_PROCESS_CONTINUE
 
 proc myPluginGetExtension(plugin: ptr ClapPlugin; id: cstring): pointer {.cdecl.} =
-  if 0 == cmpIgnoreCase(id, CLAP_EXT_LATENCY):
+  if id == CLAP_EXT_LATENCY:
     return cast[pointer](addr(myPluginLatency))
-  if 0 == cmpIgnoreCase(id, CLAP_EXT_AUDIO_PORTS):
+  elif id == CLAP_EXT_AUDIO_PORTS:
     return cast[pointer](addr(myPluginAudioPorts))
-  if 0 == cmpIgnoreCase(id, CLAP_EXT_NOTE_PORTS):
+  elif id == CLAP_EXT_NOTE_PORTS:
     return cast[pointer](addr(myPluginNotePorts))
-  if 0 == cmpIgnoreCase(id, CLAP_EXT_STATE):
+  elif id == CLAP_EXT_STATE:
     return cast[pointer](addr(myPluginState))
   # TODO: add support to CLAP_EXT_PARAMS
   return nil
@@ -237,30 +238,28 @@ proc myPluginOnMainThread(plugin: ptr ClapPlugin) {.cdecl.} =
 proc myPluginCreate(host: ptr ClapHost): ptr ClapPlugin =
 
   let pluginData = cast[ptr MyPluginData](allocShared0(sizeof(MyPluginData)))
+  let plugin = cast[ptr ClapPlugin](allocShared0(sizeof(ClapPlugin)))
+  pluginData.plugin = cast[ClapPlugin](plugin)
 
   pluginData.host = host
   pluginData.latency = 0
   pluginData.sampleRate = 0
 
-  let pluginRef: ClapPluginRef = ClapPluginRef(
-      desc: addr(myPluginDescriptor),
-      plugin_data: pluginData,
-      init: myPluginInit,
-      destroy: myPluginDestroy,
-      activate: myPluginActivate,
-      deactivate: myPluginDeactivate,
-      start_processing: myPluginStartProcessing,
-      stop_processing: myPluginStopProcessing,
-      reset: myPluginReset,
-      process: myPluginProcess,
-      get_extension: myPluginGetExtension,
-      on_main_thread: myPluginOnMainThread,
-  )
 
-  pluginData.plugin = cast[ClapPlugin](pluginRef)
+  plugin.desc = addr(myPluginDescriptor)
+  plugin.plugin_data = pluginData
+  plugin.init = myPluginInit
+  plugin.destroy = myPluginDestroy
+  plugin.activate = myPluginActivate
+  plugin.deactivate = myPluginDeactivate
+  plugin.start_processing = myPluginStartProcessing
+  plugin.stop_processing = myPluginStopProcessing
+  plugin.reset = myPluginReset
+  plugin.process = myPluginProcess
+  plugin.get_extension = myPluginGetExtension
+  plugin.on_main_thread = myPluginOnMainThread
 
-  GC_ref(pluginRef)
-  return cast[ptr ClapPlugin](pluginRef)
+  return plugin
 
 
 #########################
@@ -271,14 +270,13 @@ type PluginEntry = object
     desc: ptr ClapPluginDescriptor
     create: proc (host: ptr ClapHost): ptr ClapPlugin
 
-var plugins: seq[PluginEntry] = newSeq[PluginEntry]()
-
-plugins.add(
+var plugins: seq[PluginEntry] = @[
     PluginEntry(
         desc: addr myPluginDescriptor,
         create: myPluginCreate,
     )
-)
+]
+
 
 proc myPluginFactoryGetCount(factory: ptr ClapPluginFactory): uint32 {.cdecl.} =
   result = cast[uint32](plugins.len)
@@ -293,7 +291,7 @@ proc myPluginFactoryCreatePlugin(factory: ptr ClapPluginFactory,
     return nil
 
   for entry in plugins:
-    if 0 == cmpIgnoreCase(entry.desc.id, pluginId):
+    if entry.desc.id == pluginId:
       return entry.create(host)
 
   return nil
@@ -310,20 +308,20 @@ let clapPluginFactory {.exportc.}: ClapPluginFactory = ClapPluginFactory(
 ## clap_entry ##
 ################
 
-proc entryInit(pluginPath: cstring): bool {.cdecl.} =
+proc init(pluginPath: cstring): bool {.cdecl.} =
   return true
 
-proc entryDeinit() {.cdecl.} =
+proc deinit() {.cdecl.} =
   discard
 
-proc entryGetFactory(factoryId: cstring): pointer {.cdecl.} =
+proc getFactory(factoryId: cstring): pointer {.cdecl.} =
   if factoryId == CLAP_PLUGIN_FACTORY_ID:
     return cast[pointer](addr(clapPluginFactory))
   return nil
 
 var clap_entry* {.exportc, dynlib.} : ClapPluginEntry = ClapPluginEntry(
-    clap_version: CLAP_VERSION,
-    init: entryInit,
-    deinit: entryDeinit,
-    get_factory: entryGetFactory,
+    clap_version: CLAP_VERSION_INIT,
+    init: init,
+    deinit: deinit,
+    get_factory: getFactory,
 )

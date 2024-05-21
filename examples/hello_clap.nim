@@ -33,7 +33,7 @@ let pluginDescriptor* {.exportc.}: ClapPluginDescriptor = ClapPluginDescriptor(
   ])
 )
 
-proc myPluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
+proc PluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
   if event.spaceId == CLAP_CORE_EVENT_SPACE_ID:
     if event.type == CLAP_EVENT_NOTE_ON or event.type == CLAP_EVENT_NOTE_OFF or event.type == CLAP_EVENT_NOTE_CHOKE:
       let noteEvent = cast[ptr ClapEventNote](event)
@@ -57,7 +57,7 @@ proc myPluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
         plugin.voices.add(voice)
 
 proc myPluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint32, outputL: ptr UncheckedArray[cfloat], outputR: ptr UncheckedArray[cfloat] ) =
-  for index in startIndex..< endIndex:
+  for index in startIndex..endIndex:
     var sum: float = 0.0
     for i in 0..plugin.voices.len:
       var voice = plugin.voices[i]
@@ -108,7 +108,7 @@ let pluginClass: ClapPlugin = ClapPlugin(
   desc: pluginDescriptor.addr,
   plugin_data: nil,
   init: proc(plugin: ptr clap_plugin): bool {.cdecl.} =
-    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+    # var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
     return true,
   destroy: proc(plugin: ptr ClapPlugin) {.cdecl.} =
     var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
@@ -126,8 +126,8 @@ let pluginClass: ClapPlugin = ClapPlugin(
   reset: proc(plugin: ptr ClapPlugin) {.cdecl.} =
     var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
     pluginData.voices.setLen(0),
-  process: proc (plugin: ptr clap_plugin; process: ptr clap_process): ClapProcessStatus {.cdecl.} =
-    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+  process: proc (plugin: ptr ClapPlugin; process: ptr clap_process): ClapProcessStatus {.cdecl.} =
+    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.pluginData)
 
     assert(process.audioOutputsCount == 1)
     assert(process.audioInputsCount == 0)
@@ -136,11 +136,55 @@ let pluginClass: ClapPlugin = ClapPlugin(
     let inputEventCount: uint32 = process.inEvents.size(process.inEvents)
     var eventIndex: uint32 = 0
     var nextEventFrame: uint32 = if inputEventCount != 0 : 0 else: frameCount
-
-    for i in 0..frameCount:
+    var i: uint32 = 0
+    while i < frameCount:
       while eventIndex < inputEventCount and nextEventFrame == i:
-        let eventHeader: ptr ClapEventHeader = process.inEvents.get(process.inEvents, eventIndex)
+        let event: ptr ClapEventHeader = process.inEvents.get(process.inEvents, eventIndex)
 
+        if event.time != i:
+          nextEventFrame = event.time
+          break
+
+        PluginProcessEvent(pluginData, event)
+        eventIndex += 1
+
+        if eventIndex == inputEventCount:
+          nextEventFrame = frameCount
+          break
+
+      for index in i..nextEventFrame:
+        var sum: float = 0.0
+        for j in 0..pluginData.voices.len:
+          var voice = pluginData.voices[j]
+          if not voice.held:
+            continue
+          sum += sin(voice.phase * 2.0 * 3.14159) * 0.2
+
+          let phase: float = 440.0 * pow(2.0, (cast[float](voice.key) - 57.0) / 12.0 ) / pluginData.sampleRate
+
+          voice.phase = phase
+          voice.phase -= floor(voice.phase)
+
+        process.audioOutputs[0].data32[0][index] = sum
+        process.audioOutputs[0].data32[1][index] = sum
+
+      i = nextEventFrame
+
+    for i in 0..pluginData.voices.len:
+      var voice = pluginData.voices[i]
+      if not voice.held:
+        var event: ClapEventNote
+        event.header.size = cast[uint32](sizeof(event))
+        event.header.time = 0
+        event.header.space_id = CLAP_CORE_EVENT_SPACE_ID
+        event.header.type = CLAP_EVENT_NOTE_END
+        event.header.flags = 0
+        event.key = voice.key
+        event.note_id = voice.note_id
+        event.channel = voice.channel
+        event.port_index = 0
+        discard process.outEvents.tryPush(process.outEvents, event.header.addr)
+        pluginData.voices.del(i - 1)
 
 
     return CLAP_PROCESS_CONTINUE,

@@ -66,6 +66,7 @@ type
     ClapHost* = clap_host
     ClapHostLatency* = clap_host_latency
     ClapPluginAudioPorts* = clap_plugin_audio_ports
+    ClapAudioPortInfo* = clap_audio_port_info
     ClapNotePortInfo* = clap_note_port_info
     ClapPluginNotePorts* = clap_plugin_note_ports
     ClapPluginLatency* = clap_plugin_latency

@@ -26,7 +26,7 @@ const clap_host_t clap_host = {
 
 int main(int argc, char **argv) {
 
-    void* handle = dlopen("./examples/my_plugin.clap", RTLD_LAZY);
+    void* handle = dlopen("./examples/hello_clap.clap", RTLD_LAZY);
     if (!handle) {
         fprintf(stderr, "Error loading library: %s\n", dlerror());
         return 1;
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     }
 
     // Create the plugin
-    const clap_plugin_t* plugin = plugin_factory->create_plugin(plugin_factory, &clap_host, "com.example.my-plugin");
+    const clap_plugin_t* plugin = plugin_factory->create_plugin(plugin_factory, &clap_host, "nakst.HelloCLAP");
     if (!plugin) {
         fprintf(stderr, "Error creating plugin: %s\n", dlerror());
         dlclose(handle);

@@ -287,6 +287,7 @@ proc myPluginFactoryGetDescriptor(factory: ptr ClapPluginFactory, index: uint32)
 proc myPluginFactoryCreatePlugin(factory: ptr ClapPluginFactory,
                                   host: ptr ClapHost,
                                   pluginId: cstring): ptr ClapPlugin {.cdecl.} =
+  let host_foo = host
   if not clapVersionIsCompatible(host.clap_version):
     return nil
 

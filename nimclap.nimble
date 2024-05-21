@@ -32,7 +32,7 @@ task build_my_plugin_dev, "debug simple plugin":
   exec "nim compile -g --debugger:native --app:lib --gc:orc -o:examples/my_plugin.clap examples/my_plugin.nim"
 
 
-task build, "build simple plugin":
+task build_plugin, "build simple plugin":
   exec "nim compile -g --app:lib --gc:orc -d:release -o:examples/my_plugin.clap examples/my_plugin.nim"
 
 

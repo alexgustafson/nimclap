@@ -12,6 +12,9 @@ import
 ##  Embedding the window gives more control to the host, and feels more integrated.
 ##  Floating window are sometimes the only option due to technical limitations.
 ##
+##  The Embedding protocol is by far the most common, supported by all hosts to date,
+##  and a plugin author should support at least that case.
+##
 ##  Showing the GUI works as follow:
 ##   1. clap_plugin_gui->is_api_supported(), check what can work
 ##   2. clap_plugin_gui->create(), allocates gui resources
@@ -90,7 +93,10 @@ type
   clap_gui_resize_hints* {.bycopy.} = object
     can_resize_horizontally*: bool
     can_resize_vertically*: bool
-    ##  only if can resize horizontally and vertically
+    ##  if both horizontal and vertical resize are available, do we preserve the
+    ##  aspect ratio, and if so, what is the width x height aspect ratio to preserve.
+    ##  These flags are unused if can_resize_horizontally or vertically are false,
+    ##  and ratios are unused if preserve is false.
     preserve_aspect_ratio*: bool
     aspect_ratio_width*: uint32
     aspect_ratio_height*: uint32
@@ -101,7 +107,8 @@ type
 
 type
   clap_plugin_gui* {.bycopy.} = object
-    ##  Returns true if the requested gui api is supported
+    ##  Returns true if the requested gui api is supported, either in floating (plugin-created)
+    ##  or non-floating (embedded) mode.
     ##  [main-thread]
     is_api_supported*: proc (plugin: ptr clap_plugin; api: cstring; is_floating: bool): bool {.
         cdecl.}

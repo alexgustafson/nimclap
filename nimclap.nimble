@@ -12,35 +12,7 @@ srcDir        = "src"
 requires "nim >= 2.0.0"
 
 
-task download_clap, "download clap":
-  exec("rm -r ./clap")
-  exec("curl -L https://github.com/free-audio/clap/archive/refs/heads/main.zip --output ./main.zip")
-  exec("unzip ./main.zip")
-  exec("rm -rf main.zip")
-  exec("mv ./clap-main ./clap")
-
-task download_clap_host, "download clap_host":
-  exec("rm -rf ./clap-host")
-  exec("git clone --recurse-submodules https://github.com/free-audio/clap-host")
-
-
 task generate_bindings, "generate bindings":
   exec("nim r scripts/generate_bindings.nim")
 
 
-task build_my_plugin_dev, "debug simple plugin":
-  exec "nim compile -g --debugger:native --app:lib --gc:orc -o:examples/my_plugin.clap examples/my_plugin.nim"
-
-
-task build_plugin, "build simple plugin":
-  exec "nim compile -g --app:lib --gc:orc -d:release -o:examples/my_plugin.clap examples/my_plugin.nim"
-
-
-task build_hello, "build hello plugin":
-  exec "nim compile -g --app:lib --gc:orc -d:release -o:examples/hello_clap.clap examples/hello_clap.nim"
-
-
-task scratch, "scratch":
-  exec "c2nim --dynlib --cdecl --out=scratch/plugin-template.nim scratch/plugin-template.c"
-  exec "c2nim --dynlib --cdecl --out=scratch/scratch-c2nim.nim scratch/scratch-c2nim.c"
-  # exec "nim compile cc --app:lib --gc:orc -o:scratch/scratch-nim2c.c scratch/scratch-nim2c.nim"

@@ -206,11 +206,11 @@ type
     ##  '/' will be used as a separator to show a tree-like structure.
     module*: array[CLAP_PATH_SIZE, char]
     min_value*: cdouble
-    ##  Minimum plain value
+    ##  Minimum plain value. Must be finite (`std::isfinite` true)
     max_value*: cdouble
-    ##  Maximum plain value
+    ##  Maximum plain value. Must be finite
     default_value*: cdouble
-    ##  Default plain value
+    ##  Default plain value. Must be in [min, max] range.
 
   clap_plugin_params* {.bycopy.} = object
     ##  Returns the number of parameters.

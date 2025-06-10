@@ -38,9 +38,6 @@ type
     is_config_supported*: proc (plugin: ptr clap_plugin;
                               config: ptr clap_ambisonic_config): bool {.cdecl.}
     ##  Returns true on success
-    ##
-    ##  config_id: the configuration id, see clap_plugin_audio_ports_config.
-    ##  If config_id is CLAP_INVALID_ID, then this function queries the current port info.
     ##  [main-thread]
     get_config*: proc (plugin: ptr clap_plugin; is_input: bool; port_index: uint32;
                      config: ptr clap_ambisonic_config): bool {.cdecl.}

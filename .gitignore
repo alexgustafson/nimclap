@@ -1,8 +1,8 @@
-clap
-!src/nimclap/clap
+
 
 /tests/clap-validator/
 !.idea/runConfigurations
-*./clap/
-*./clap-host/
+
 /examples/*.clap
+
+

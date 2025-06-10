@@ -14,7 +14,7 @@ type
 const
   CLAP_VERSION_MAJOR* = 1
   CLAP_VERSION_MINOR* = 2
-  CLAP_VERSION_REVISION* = 1
+  CLAP_VERSION_REVISION* = 6
   CLAP_VERSION_INIT*: clap_version = clap_version(
     major: CLAP_VERSION_MAJOR,
     minor: CLAP_VERSION_MINOR,

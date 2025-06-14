@@ -25,7 +25,7 @@ let pluginDescriptor* {.exportc.}: ClapPluginDescriptor = ClapPluginDescriptor(
   manual_url: "",
   support_url: "",
   version: "1.0.0",
-  description: "Hello CLAP",
+  description: "The best audio plugin ever.",
   features: allocCStringArray([
     CLAP_PLUGIN_FEATURE_AUDIO_EFFECT,
     CLAP_PLUGIN_FEATURE_MIXING,
@@ -197,32 +197,19 @@ let pluginClass: ClapPlugin = ClapPlugin(
 )
 
 
-proc getMyPluginCount(factory: ptr ClapPluginFactory): uint32 {.cdecl.} =
-  return 1
-
-proc getMyPluginDescriptor(factory: ptr ClapPluginFactory; index: uint32): ptr ClapPluginDescriptor {.cdecl.} =
-  return if index == 0 : addr pluginDescriptor else: nil
-
-
-proc createMyPlugin(
-  factory: ptr ClapPluginFactory,
-  host: ptr ClapHost,
-  pluginId: cstring,
-): ptr ClapPlugin {.cdecl.} =
-  if not clapVersionIsCompatible(host.clapVersion) or pluginId != pluginDescriptor.id:
-    return nil
-
-  var myPlugin: ptr MyPlugin = cast[ptr MyPlugin](allocShared0(sizeof(MyPlugin)))
-  myPlugin.host = host
-  myPlugin.plugin = pluginClass
-  myPlugin.plugin.plugin_data = cast[pointer](myPlugin)
-  return myPlugin.plugin.addr
-
-
 var pluginFactory: ClapPluginFactory = ClapPluginFactory(
-  get_plugin_count: getMyPluginCount,
-  get_plugin_descriptor: getMyPluginDescriptor,
-  create_plugin: createMyPlugin,
+  get_plugin_count: proc(factory: ptr ClapPluginFactory): uint32 {.cdecl.} =
+    return 1,
+  get_plugin_descriptor: proc(factory: ptr ClapPluginFactory, index: uint32): ptr ClapPluginDescriptor {.cdecl.} =
+    return if index == 0 : pluginDescriptor.addr else: nil,
+  create_plugin: proc(factory: ptr ClapPluginFactory, host: ptr ClapHost, pluginId: cstring): ptr ClapPlugin {.cdecl.} =
+    if not clapVersionIsCompatible(host.clapVersion) or pluginId!= pluginDescriptor.id:
+      return nil
+    var myPlugin: ptr MyPlugin = cast[ptr MyPlugin](allocShared0(sizeof(MyPlugin)))
+    myPlugin.host = host
+    myPlugin.plugin = pluginClass
+    myPlugin.plugin.plugin_data = cast[pointer](myPlugin)
+    return myPlugin.plugin.addr,
 )
 
 

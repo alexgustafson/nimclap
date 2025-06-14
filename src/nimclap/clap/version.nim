@@ -1,5 +1,4 @@
-import
-  private/macros, private/std
+
 
 type
   clap_version* {.bycopy.} = object
@@ -9,6 +8,7 @@ type
     major*: uint32
     minor*: uint32
     revision*: uint32
+
 
 
 const

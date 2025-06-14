@@ -91,6 +91,13 @@ proc convertToNim =
 
         assert execCmd(c2nimCmd) == 0
 
+        if nimfilename == "std":
+            writeFile(pathToFile/fmt"{nimfilename}.nim", privateStd)
+        elif filename == "macros":
+            writeFile(pathToFile/fmt"{nimfilename}.nim", privateMacros)
+
+
+
         var content = readFile(pathToFile/fmt"{nimfilename}.nim")
 
         if additional_imports.hasKey(nimfilename):

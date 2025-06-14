@@ -21,6 +21,14 @@ task build_c_template, "Build the C plugin template as a CLAP plugin":
 task build_hello, "Build hello clap":
   exec "nim compile -g --app:lib -o:build/hello_clap.clap examples/hello_clap.nim"
 
+task build_clap_loader, "Build the CLAP plugin loader test tool":
+  when defined(windows):
+    exec "gcc -o tests/clap_loader.exe tests/clap_loader.c"
+  else:
+    exec "gcc -o tests/clap_loader tests/clap_loader.c -ldl"
+
+
+
 
 
 

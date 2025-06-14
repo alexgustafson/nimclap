@@ -1,6 +1,7 @@
 
 
 /tests/clap-validator/
+/tests/clap_loader.ext
 !.idea/runConfigurations
 
 /examples/*.clap

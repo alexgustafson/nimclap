@@ -4,6 +4,9 @@
 // Include CLAP headers from the root clap directory
 #include "../clap/include/clap/entry.h"
 #include "../clap/include/clap/version.h"
+#include "../clap/include/clap/factory/plugin-factory.h"
+#include "../clap/include/clap/plugin.h"
+#include "../clap/include/clap/host.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -85,6 +88,82 @@ int main(int argc, char *argv[]) {
     printf("init function: %s\n", clap_entry->init ? "present" : "missing");
     printf("deinit function: %s\n", clap_entry->deinit ? "present" : "missing");
     printf("get_factory function: %s\n", clap_entry->get_factory ? "present" : "missing");
+
+    // Call the init function if present
+    if (clap_entry->init) {
+        printf("\nCalling init('%s')...\n", plugin_path);
+        bool init_result = clap_entry->init(plugin_path);
+        printf("init() returned: %s\n", init_result ? "true" : "false");
+        
+        if (init_result) {
+            // Call the get_factory function if init succeeded
+            if (clap_entry->get_factory) {
+                const char* factory_id = "clap.plugin-factory";
+                printf("\nCalling get_factory('%s')...\n", factory_id);
+                const clap_plugin_factory_t* factory = (const clap_plugin_factory_t*)clap_entry->get_factory(factory_id);
+                printf("Factory pointer: %p\n", factory);
+                
+                if (factory) {
+                    // Test factory methods
+                    printf("\nTesting factory methods:\n");
+                    
+                    // Get plugin count
+                    uint32_t plugin_count = factory->get_plugin_count(factory);
+                    printf("Plugin count: %u\n", plugin_count);
+                    
+                    // Get plugin descriptors
+                    for (uint32_t i = 0; i < plugin_count; i++) {
+                        const clap_plugin_descriptor_t* desc = factory->get_plugin_descriptor(factory, i);
+                        if (desc) {
+                            printf("\nPlugin %u:\n", i);
+                            printf("  ID: %s\n", desc->id);
+                            printf("  Name: %s\n", desc->name);
+                            printf("  Vendor: %s\n", desc->vendor);
+                            printf("  Version: %s\n", desc->version);
+                            printf("  Description: %s\n", desc->description);
+                            
+                            // Create a minimal test host
+                            clap_host_t test_host = {
+                                .clap_version = CLAP_VERSION,
+                                .host_data = NULL,
+                                .name = "CLAP Loader Test",
+                                .vendor = "Test",
+                                .url = "http://test.com",
+                                .version = "1.0.0",
+                                .get_extension = NULL,
+                                .request_restart = NULL,
+                                .request_process = NULL,
+                                .request_callback = NULL
+                            };
+                            
+                            // Try to create the plugin
+                            printf("\n  Attempting to create plugin with ID '%s'...\n", desc->id);
+                            const clap_plugin_t* plugin = factory->create_plugin(factory, &test_host, desc->id);
+                            if (plugin) {
+                                printf("  Plugin created successfully!\n");
+                                printf("  Plugin descriptor: %s\n", plugin->desc->name);
+                                printf("  Plugin has destroy method: %s\n", plugin->destroy ? "yes" : "no");
+                                
+                                // Clean up - destroy the plugin
+                                if (plugin->destroy) {
+                                    plugin->destroy(plugin);
+                                    printf("  Plugin destroyed.\n");
+                                }
+                            } else {
+                                printf("  Failed to create plugin.\n");
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Call the deinit function before unloading
+            if (clap_entry->deinit) {
+                printf("\nCalling deinit()...\n");
+                clap_entry->deinit();
+            }
+        }
+    }
 
     // Clean up
     CLOSE_LIBRARY(handle);

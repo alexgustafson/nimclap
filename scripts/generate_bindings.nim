@@ -96,9 +96,13 @@ proc convertToNim =
         elif filename == "macros":
             writeFile(pathToFile/fmt"{nimfilename}.nim", privateMacros)
 
-
-
         var content = readFile(pathToFile/fmt"{nimfilename}.nim")
+
+        #[
+          TODO: tweak the c comments.
+          If there is a comment on the same line as code, move it to a new line above the code.
+          c2nim will do a better job with putting comment at the right place then.
+        ]#
 
         if additional_imports.hasKey(nimfilename):
             content = additional_imports[nimfilename] & content

@@ -83,7 +83,7 @@ let extensionNotePorts = ClapPluginNotePorts(
     if not isInput or index > 0:
        return false
     info.id = 0
-    info.name = cast[array[CLAP_NAME_SIZE, char]]("Note Port")
+    info.name.setName("Note Input Port")
     info.supportedDialects = ord(CLAP_NOTE_DIALECT_CLAP)
     info.preferredDialect = ord(CLAP_NOTE_DIALECT_CLAP)
     return true
@@ -100,7 +100,7 @@ let extensionAudioPorts = ClapPluginAudioPorts(
     info.flags = CLAP_AUDIO_PORT_IS_MAIN
     info.portType = CLAP_PORT_STEREO
     info.inPlacePair = CLAP_INVALID_ID
-    info.name = cast[array[CLAP_NAME_SIZE, char]]("Audio Output")
+    info.name.setName("Audio Output Port")
     return true
 )
 

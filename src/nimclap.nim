@@ -105,3 +105,9 @@ type
     int32T*  = int32
     int64T*  = int64
 
+
+proc setName*(dest: var array[CLAP_NAME_SIZE, char], src: string) =
+  let maxLen = min(src.len, CLAP_NAME_SIZE - 1)
+  for i in 0..<maxLen:
+    dest[i] = src[i]
+  dest[maxLen] = '\0'

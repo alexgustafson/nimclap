@@ -76,11 +76,12 @@ proc myPluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uin
 
 
 
-let myPluginExtensionNotePorts = ClapPluginNotePorts(
-  count: proc(plugin: ptr ClapPlugin, isInput: bool): uint32 {.cdecl.} = 1,
+let extensionNotePorts = ClapPluginNotePorts(
+  count: proc(plugin: ptr ClapPlugin, isInput: bool): uint32 {.cdecl.} =
+    return if isInput : 1 else: 0,
   get: proc(plugin: ptr ClapPlugin, index: uint32, isInput: bool, info: ptr ClapNotePortInfo): bool {.cdecl} =
-    if not isInput or index >= 0:
-      return false
+    if not isInput or index > 0:
+       return false
     info.id = 0
     info.name = cast[array[CLAP_NAME_SIZE, char]]("Note Port")
     info.supportedDialects = ord(CLAP_NOTE_DIALECT_CLAP)
@@ -88,11 +89,11 @@ let myPluginExtensionNotePorts = ClapPluginNotePorts(
     return true
 )
 
-let myPluginExtensionAudioPorts = ClapPluginAudioPorts(
+let extensionAudioPorts = ClapPluginAudioPorts(
   count: proc(plugin: ptr ClapPlugin, isInput: bool): uint32 {.cdecl} =
     return if isInput : 0 else: 1,
   get: proc(plugin: ptr ClapPlugin, index: uint32, isInput: bool, info: ptr ClapAudioPortInfo): bool {.cdecl} =
-    if isInput or index >= 0:
+    if isInput or index > 0:
       return false
     info.id = 0
     info.channelCount = 2
@@ -190,7 +191,9 @@ let pluginClass: ClapPlugin = ClapPlugin(
     return CLAP_PROCESS_CONTINUE,
   get_extension: proc (plugin: ptr clap_plugin; id: cstring): pointer {.cdecl.} =
     if id == CLAP_EXT_NOTE_PORTS:
-      return cast[pointer](myPluginExtensionNotePorts.addr)
+      return cast[pointer](extensionNotePorts.addr)
+    if id == CLAP_EXT_AUDIO_PORTS:
+      return cast[pointer](extensionAudioPorts.addr)
     return nil,
   on_main_thread: proc (plugin: ptr clap_plugin) {.cdecl.} =
     discard

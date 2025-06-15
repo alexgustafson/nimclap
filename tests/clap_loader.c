@@ -4,9 +4,12 @@
 // Include CLAP headers from the root clap directory
 #include "../clap/include/clap/entry.h"
 #include "../clap/include/clap/version.h"
+#include "../clap/include/clap/id.h"
 #include "../clap/include/clap/factory/plugin-factory.h"
 #include "../clap/include/clap/plugin.h"
 #include "../clap/include/clap/host.h"
+#include "../clap/include/clap/ext/note-ports.h"
+#include "../clap/include/clap/ext/audio-ports.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -122,6 +125,23 @@ int main(int argc, char *argv[]) {
                             printf("  Version: %s\n", desc->version);
                             printf("  Description: %s\n", desc->description);
                             
+                            // Display features
+                            printf("  Features:\n");
+                            if (desc->features) {
+                                const char *const *feature = desc->features;
+                                int feature_count = 0;
+                                while (*feature) {
+                                    printf("    [%d] %s\n", feature_count, *feature);
+                                    feature++;
+                                    feature_count++;
+                                }
+                                if (feature_count == 0) {
+                                    printf("    (no features registered)\n");
+                                }
+                            } else {
+                                printf("    (features array is NULL)\n");
+                            }
+                            
                             // Create a minimal test host
                             clap_host_t test_host = {
                                 .clap_version = CLAP_VERSION,
@@ -143,6 +163,115 @@ int main(int argc, char *argv[]) {
                                 printf("  Plugin created successfully!\n");
                                 printf("  Plugin descriptor: %s\n", plugin->desc->name);
                                 printf("  Plugin has destroy method: %s\n", plugin->destroy ? "yes" : "no");
+                                
+                                // Initialize the plugin
+                                if (plugin->init && plugin->init(plugin)) {
+                                    printf("  Plugin initialized successfully.\n");
+                                    
+                                    // Test CLAP_EXT_NOTE_PORTS extension
+                                    printf("\n  Testing CLAP_EXT_NOTE_PORTS extension:\n");
+                                    const clap_plugin_note_ports_t* note_ports = 
+                                        (const clap_plugin_note_ports_t*)plugin->get_extension(plugin, CLAP_EXT_NOTE_PORTS);
+                                    
+                                    if (note_ports) {
+                                        printf("    Note ports extension found!\n");
+                                        
+                                        // Check input ports
+                                        uint32_t input_count = note_ports->count(plugin, true);
+                                        printf("    Input note ports: %u\n", input_count);
+                                        for (uint32_t j = 0; j < input_count; j++) {
+                                            clap_note_port_info_t info;
+                                            if (note_ports->get(plugin, j, true, &info)) {
+                                                printf("      Input port %u:\n", j);
+                                                printf("        ID: %u\n", info.id);
+                                                printf("        Name: %s\n", info.name);
+                                                printf("        Supported dialects: 0x%x", info.supported_dialects);
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_CLAP) printf(" CLAP");
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_MIDI) printf(" MIDI");
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_MIDI_MPE) printf(" MIDI_MPE");
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_MIDI2) printf(" MIDI2");
+                                                printf("\n");
+                                                printf("        Preferred dialect: 0x%x\n", info.preferred_dialect);
+                                            }
+                                        }
+                                        
+                                        // Check output ports
+                                        uint32_t output_count = note_ports->count(plugin, false);
+                                        printf("    Output note ports: %u\n", output_count);
+                                        for (uint32_t j = 0; j < output_count; j++) {
+                                            clap_note_port_info_t info;
+                                            if (note_ports->get(plugin, j, false, &info)) {
+                                                printf("      Output port %u:\n", j);
+                                                printf("        ID: %u\n", info.id);
+                                                printf("        Name: %s\n", info.name);
+                                                printf("        Supported dialects: 0x%x", info.supported_dialects);
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_CLAP) printf(" CLAP");
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_MIDI) printf(" MIDI");
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_MIDI_MPE) printf(" MIDI_MPE");
+                                                if (info.supported_dialects & CLAP_NOTE_DIALECT_MIDI2) printf(" MIDI2");
+                                                printf("\n");
+                                                printf("        Preferred dialect: 0x%x\n", info.preferred_dialect);
+                                            }
+                                        }
+                                    } else {
+                                        printf("    Note ports extension not found.\n");
+                                    }
+                                    
+                                    // Test CLAP_EXT_AUDIO_PORTS extension
+                                    printf("\n  Testing CLAP_EXT_AUDIO_PORTS extension:\n");
+                                    const clap_plugin_audio_ports_t* audio_ports = 
+                                        (const clap_plugin_audio_ports_t*)plugin->get_extension(plugin, CLAP_EXT_AUDIO_PORTS);
+                                    
+                                    if (audio_ports) {
+                                        printf("    Audio ports extension found!\n");
+                                        
+                                        // Check input ports
+                                        uint32_t input_count = audio_ports->count(plugin, true);
+                                        printf("    Input audio ports: %u\n", input_count);
+                                        for (uint32_t j = 0; j < input_count; j++) {
+                                            clap_audio_port_info_t info;
+                                            if (audio_ports->get(plugin, j, true, &info)) {
+                                                printf("      Input port %u:\n", j);
+                                                printf("        ID: %u\n", info.id);
+                                                printf("        Name: %s\n", info.name);
+                                                printf("        Channel count: %u\n", info.channel_count);
+                                                printf("        Port type: %s\n", info.port_type ? info.port_type : "(unspecified)");
+                                                printf("        Flags: 0x%x", info.flags);
+                                                if (info.flags & CLAP_AUDIO_PORT_IS_MAIN) printf(" IS_MAIN");
+                                                if (info.flags & CLAP_AUDIO_PORT_SUPPORTS_64BITS) printf(" SUPPORTS_64BITS");
+                                                if (info.flags & CLAP_AUDIO_PORT_PREFERS_64BITS) printf(" PREFERS_64BITS");
+                                                if (info.flags & CLAP_AUDIO_PORT_REQUIRES_COMMON_SAMPLE_SIZE) printf(" REQUIRES_COMMON_SAMPLE_SIZE");
+                                                printf("\n");
+                                                printf("        In-place pair: %u%s\n", info.in_place_pair, 
+                                                       info.in_place_pair == CLAP_INVALID_ID ? " (none)" : "");
+                                            }
+                                        }
+                                        
+                                        // Check output ports
+                                        uint32_t output_count = audio_ports->count(plugin, false);
+                                        printf("    Output audio ports: %u\n", output_count);
+                                        for (uint32_t j = 0; j < output_count; j++) {
+                                            clap_audio_port_info_t info;
+                                            if (audio_ports->get(plugin, j, false, &info)) {
+                                                printf("      Output port %u:\n", j);
+                                                printf("        ID: %u\n", info.id);
+                                                printf("        Name: %s\n", info.name);
+                                                printf("        Channel count: %u\n", info.channel_count);
+                                                printf("        Port type: %s\n", info.port_type ? info.port_type : "(unspecified)");
+                                                printf("        Flags: 0x%x", info.flags);
+                                                if (info.flags & CLAP_AUDIO_PORT_IS_MAIN) printf(" IS_MAIN");
+                                                if (info.flags & CLAP_AUDIO_PORT_SUPPORTS_64BITS) printf(" SUPPORTS_64BITS");
+                                                if (info.flags & CLAP_AUDIO_PORT_PREFERS_64BITS) printf(" PREFERS_64BITS");
+                                                if (info.flags & CLAP_AUDIO_PORT_REQUIRES_COMMON_SAMPLE_SIZE) printf(" REQUIRES_COMMON_SAMPLE_SIZE");
+                                                printf("\n");
+                                                printf("        In-place pair: %u%s\n", info.in_place_pair, 
+                                                       info.in_place_pair == CLAP_INVALID_ID ? " (none)" : "");
+                                            }
+                                        }
+                                    } else {
+                                        printf("    Audio ports extension not found.\n");
+                                    }
+                                }
                                 
                                 // Clean up - destroy the plugin
                                 if (plugin->destroy) {

@@ -299,14 +299,15 @@ int main(int argc, char *argv[]) {
                                                     if (plugin->process) {
                                                         printf("\n    Testing process()...\n");
                                                         
-                                                        // Create minimal process context
-                                                        float dummy_output[1024] = {0};
-                                                        float* output_ptrs[1] = {dummy_output};
+                                                        // Create minimal process context with stereo output
+                                                        float dummy_output_left[1024] = {0};
+                                                        float dummy_output_right[1024] = {0};
+                                                        float* output_ptrs[2] = {dummy_output_left, dummy_output_right};
                                                         
                                                         clap_audio_buffer_t audio_outputs = {
                                                             .data32 = output_ptrs,
                                                             .data64 = NULL,
-                                                            .channel_count = 1,
+                                                            .channel_count = 2,  // Stereo
                                                             .latency = 0,
                                                             .constant_mask = 0
                                                         };

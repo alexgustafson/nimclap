@@ -12,6 +12,8 @@ import nimclap/clap/stream
 import nimclap/clap/events
 import nimclap/clap/process
 import nimclap/clap/entry
+import nimclap/clap/audiobuffer
+
 
 import nimclap/clap/factory/pluginfactory
 
@@ -94,6 +96,10 @@ type
     ClapProcess* = clap_process
     ClapPluginFactory* = clap_plugin_factory
     ClapPluginEntry* = clap_plugin_entry
+    ClapInputEvents* = clap_input_events
+    ClapOutputEvents* = clap_output_events
+    ClapAudioBuffer* = clap_audio_buffer
+
 
 
     uint8T*  = uint8
@@ -111,3 +117,27 @@ proc setName*(dest: var array[CLAP_NAME_SIZE, char], src: string) =
   for i in 0..<maxLen:
     dest[i] = src[i]
   dest[maxLen] = '\0'
+
+# Helper for safely getting event count from input events
+proc getEventCount*(events: ptr ClapInputEvents): uint32 =
+  if events.isNil: 0'u32 else: events.size(events)
+
+# Helper for safely getting an event from input events
+proc getEvent*(events: ptr ClapInputEvents, index: uint32): ptr ClapEventHeader =
+  if events.isNil: nil else: events.get(events, index)
+
+# Helper for safely pushing to output events
+proc tryPushEvent*(events: ptr ClapOutputEvents, event: ptr ClapEventHeader): bool =
+  if events.isNil: false else: events.tryPush(events, event)
+
+# Helper for safely accessing audio buffer data
+proc getChannelData32*(buffer: ptr ClapAudioBuffer, channel: uint32): ptr UncheckedArray[cfloat] =
+  if buffer.isNil or buffer.data32.isNil or channel >= buffer.channelCount:
+    nil
+  else:
+    buffer.data32[channel]
+
+
+# Template for safe pointer field access
+template safeAccess*[T](p: ptr T, field: untyped, default: untyped): untyped =
+  if p.isNil: default else: p.field

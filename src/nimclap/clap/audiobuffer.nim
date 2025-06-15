@@ -22,8 +22,8 @@ import
 type
   clap_audio_buffer* {.bycopy.} = object
     ##  Either data32 or data64 pointer will be set.
-    data32*: ptr UncheckedArray[UncheckedArray[cfloat]]
-    data64*: ptr UncheckedArray[UncheckedArray[cdouble]]
+    data32*: ptr UncheckedArray[ptr UncheckedArray[cfloat]]
+    data64*:  ptr UncheckedArray[ptr UncheckedArray[cdouble]]
     channel_count*: uint32
     latency*: uint32
     ##  latency from/to the audio interface

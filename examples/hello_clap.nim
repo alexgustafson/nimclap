@@ -134,20 +134,22 @@ let pluginClass: ClapPlugin = ClapPlugin(
     assert(process.audioInputsCount == 0)
 
     let frameCount: uint32 = process.framesCount
-    let inputEventCount: uint32 = process.inEvents.size(process.inEvents)
+    let inputEventCount = process.inEvents.getEventCount()
+
     var eventIndex: uint32 = 0
     var nextEventFrame: uint32 = if inputEventCount != 0 : 0 else: frameCount
     var i: uint32 = 0
     while i < frameCount:
       while eventIndex < inputEventCount and nextEventFrame == i:
-        let event: ptr ClapEventHeader = process.inEvents.get(process.inEvents, eventIndex)
+        let event = process.inEvents.getEvent(eventIndex)
+        if not event.isNil:
 
-        if event.time != i:
-          nextEventFrame = event.time
-          break
+          if event.time != i:
+            nextEventFrame = event.time
+            break
 
-        PluginProcessEvent(pluginData, event)
-        eventIndex += 1
+          PluginProcessEvent(pluginData, event)
+          eventIndex += 1
 
         if eventIndex == inputEventCount:
           nextEventFrame = frameCount

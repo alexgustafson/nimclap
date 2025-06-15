@@ -1,5 +1,5 @@
 import
-  private/std
+  private/std, private/macros
 
 type
   clap_id* = uint32

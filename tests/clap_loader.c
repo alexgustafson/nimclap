@@ -10,6 +10,8 @@
 #include "../clap/include/clap/host.h"
 #include "../clap/include/clap/ext/note-ports.h"
 #include "../clap/include/clap/ext/audio-ports.h"
+#include "../clap/include/clap/process.h"
+#include "../clap/include/clap/events.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -271,12 +273,107 @@ int main(int argc, char *argv[]) {
                                     } else {
                                         printf("    Audio ports extension not found.\n");
                                     }
+                                    
+                                    // Test plugin lifecycle methods
+                                    printf("\n  Testing plugin lifecycle:\n");
+                                    
+                                    // Test activate()
+                                    if (plugin->activate) {
+                                        printf("    Testing activate()...\n");
+                                        double sample_rate = 48000.0;
+                                        uint32_t min_frames = 32;
+                                        uint32_t max_frames = 1024;
+                                        bool activate_result = plugin->activate(plugin, sample_rate, min_frames, max_frames);
+                                        printf("    activate(%.1f Hz, %u-%u frames) returned: %s\n", 
+                                               sample_rate, min_frames, max_frames, activate_result ? "true" : "false");
+                                        
+                                        if (activate_result) {
+                                            // Test start_processing()
+                                            if (plugin->start_processing) {
+                                                printf("\n    Testing start_processing()...\n");
+                                                bool start_result = plugin->start_processing(plugin);
+                                                printf("    start_processing() returned: %s\n", start_result ? "true" : "false");
+                                                
+                                                if (start_result) {
+                                                    // Test process()
+                                                    if (plugin->process) {
+                                                        printf("\n    Testing process()...\n");
+                                                        
+                                                        // Create minimal process context
+                                                        float dummy_output[1024] = {0};
+                                                        float* output_ptrs[1] = {dummy_output};
+                                                        
+                                                        clap_audio_buffer_t audio_outputs = {
+                                                            .data32 = output_ptrs,
+                                                            .data64 = NULL,
+                                                            .channel_count = 1,
+                                                            .latency = 0,
+                                                            .constant_mask = 0
+                                                        };
+                                                        
+                                                        clap_process_t process_context = {
+                                                            .steady_time = -1,
+                                                            .frames_count = 512,
+                                                            .transport = NULL,
+                                                            .audio_inputs = NULL,
+                                                            .audio_outputs = &audio_outputs,
+                                                            .audio_inputs_count = 0,
+                                                            .audio_outputs_count = 1,
+                                                            .in_events = NULL,
+                                                            .out_events = NULL
+                                                        };
+                                                        
+                                                        clap_process_status status = plugin->process(plugin, &process_context);
+                                                        printf("    process(512 frames) returned status: %d", status);
+                                                        switch(status) {
+                                                            case CLAP_PROCESS_ERROR: printf(" (ERROR)\n"); break;
+                                                            case CLAP_PROCESS_CONTINUE: printf(" (CONTINUE)\n"); break;
+                                                            case CLAP_PROCESS_CONTINUE_IF_NOT_QUIET: printf(" (CONTINUE_IF_NOT_QUIET)\n"); break;
+                                                            case CLAP_PROCESS_TAIL: printf(" (TAIL)\n"); break;
+                                                            case CLAP_PROCESS_SLEEP: printf(" (SLEEP)\n"); break;
+                                                            default: printf(" (UNKNOWN)\n"); break;
+                                                        }
+                                                    }
+                                                    
+                                                    // Test reset()
+                                                    if (plugin->reset) {
+                                                        printf("\n    Testing reset()...\n");
+                                                        plugin->reset(plugin);
+                                                        printf("    reset() called successfully.\n");
+                                                    }
+                                                    
+                                                    // Test stop_processing()
+                                                    if (plugin->stop_processing) {
+                                                        printf("\n    Testing stop_processing()...\n");
+                                                        plugin->stop_processing(plugin);
+                                                        printf("    stop_processing() called successfully.\n");
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Test on_main_thread()
+                                            if (plugin->on_main_thread) {
+                                                printf("\n    Testing on_main_thread()...\n");
+                                                plugin->on_main_thread(plugin);
+                                                printf("    on_main_thread() called successfully.\n");
+                                            }
+                                            
+                                            // Test deactivate()
+                                            if (plugin->deactivate) {
+                                                printf("\n    Testing deactivate()...\n");
+                                                plugin->deactivate(plugin);
+                                                printf("    deactivate() called successfully.\n");
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    printf("  Plugin was not initialized, skipping lifecycle tests.\n");
                                 }
                                 
                                 // Clean up - destroy the plugin
                                 if (plugin->destroy) {
                                     plugin->destroy(plugin);
-                                    printf("  Plugin destroyed.\n");
+                                    printf("\n  Plugin destroyed.\n");
                                 }
                             } else {
                                 printf("  Failed to create plugin.\n");

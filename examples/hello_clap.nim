@@ -39,7 +39,7 @@ proc PluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
       let noteEvent = cast[ptr ClapEventNote](event)
 
       for i in countdown(plugin.voices.len - 1, 0):
-        var voice = plugin.voices[i]
+        var voice = addr plugin.voices[i]
         if (noteEvent.key == -1 or voice.key == noteEvent.key) and (noteEvent.noteId == -1 or voice.noteId == noteEvent.noteId) and (noteEvent.channel == -1 or voice.channel == noteEvent.channel):
           if event.type == CLAP_EVENT_NOTE_CHOKE:
             plugin.voices.del(i)
@@ -56,24 +56,28 @@ proc PluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
         )
         plugin.voices.add(voice)
 
-proc myPluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint32, outputL: ptr UncheckedArray[cfloat], outputR: ptr UncheckedArray[cfloat] ) =
-  for index in startIndex..endIndex:
+proc PluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint32, outputL: ptr UncheckedArray[cfloat], outputR: ptr UncheckedArray[cfloat]) =
+  for index in startIndex..<endIndex:
     var sum: float = 0.0
-    for i in 0..plugin.voices.len:
-      var voice = plugin.voices[i]
+    for i in 0..<plugin.voices.len:
+      var voice = addr plugin.voices[i]
       if not voice.held:
         continue
-      sum += sin(voice.phase * 2.0 * 3.14159) * 0.2
 
-      let phase: float = 440.0 * pow(2.0, (cast[float](voice.key) - 57.0) / 12.0 ) / plugin.sampleRate
+      # Generate sine wave sample
+      sum += sin(voice.phase * 2.0 * PI) * 0.2
 
-      voice.phase = phase
-      voice.phase -= floor(voice.phase)
+      # Calculate frequency and phase increment
+      let frequency = 440.0 * pow(2.0, (cast[float](voice.key) - 57.0) / 12.0)
+      let phaseIncrement = frequency / plugin.sampleRate
+
+      # Advance phase
+      voice.phase += phaseIncrement
+      if voice.phase >= 1.0:
+        voice.phase -= 1.0
 
     outputL[index] = sum
     outputR[index] = sum
-
-
 
 
 let extensionNotePorts = ClapPluginNotePorts(
@@ -128,35 +132,27 @@ let pluginClass: ClapPlugin = ClapPlugin(
     var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
     pluginData.voices.setLen(0),
   process: proc (plugin: ptr ClapPlugin; process: ptr clap_process): ClapProcessStatus {.cdecl.} =
-    echo "=== PROCESS START ==="
-    
     var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.pluginData)
-    echo "Plugin data: ", cast[int](pluginData)
-
-    echo "Audio outputs count: ", process.audioOutputsCount
-    echo "Audio inputs count: ", process.audioInputsCount
     
     assert(process.audioOutputsCount == 1)
     assert(process.audioInputsCount == 0)
 
     let frameCount: uint32 = process.framesCount
-    echo "Frame count: ", frameCount
-    
-    echo "Checking in_events..."
     let inputEventCount = process.inEvents.getEventCount()
-    echo "Input event count: ", inputEventCount
+    
+    # Get output buffers
+    let outputL = process.audioOutputs[0].addr.getChannelData32(0)
+    let outputR = process.audioOutputs[0].addr.getChannelData32(1)
 
     var eventIndex: uint32 = 0
-    var nextEventFrame: uint32 = if inputEventCount != 0 : 0 else: frameCount
-    echo "Next event frame: ", nextEventFrame
-    
-    echo "Starting frame loop..."
+    var nextEventFrame: uint32 = if inputEventCount != 0: 0 else: frameCount
+
     var i: uint32 = 0
     while i < frameCount:
+      # Process all events at the current time
       while eventIndex < inputEventCount and nextEventFrame == i:
         let event = process.inEvents.getEvent(eventIndex)
         if not event.isNil:
-
           if event.time != i:
             nextEventFrame = event.time
             break
@@ -164,41 +160,26 @@ let pluginClass: ClapPlugin = ClapPlugin(
           PluginProcessEvent(pluginData, event)
           eventIndex += 1
 
-        if eventIndex == inputEventCount:
-          nextEventFrame = frameCount
-          break
+          # Get next event time
+          if eventIndex < inputEventCount:
+            let nextEvent = process.inEvents.getEvent(eventIndex)
+            if not nextEvent.isNil:
+              nextEventFrame = nextEvent.time
+            else:
+              nextEventFrame = frameCount
+          else:
+            nextEventFrame = frameCount
 
-      echo "Processing audio from frame ", i, " to ", nextEventFrame, ", voices count: ", pluginData.voices.len
-      
-      for index in i..nextEventFrame:
-        var sum: float = 0.0
-        echo "Processing frame ", index, " with ", pluginData.voices.len, " voices"
-        
-        for j in 0..<pluginData.voices.len:
-          echo "Processing voice ", j
-          if not pluginData.voices[j].held:
-            echo "Voice ", j, " not held, skipping"
-            continue
-            
-          let voiceSum = sin(pluginData.voices[j].phase * 2.0 * 3.14159) * 0.2
-          sum += voiceSum
-          echo "Voice ", j, " phase: ", pluginData.voices[j].phase, " sum: ", voiceSum
-
-          let phase: float = 440.0 * pow(2.0, (cast[float](pluginData.voices[j].key) - 57.0) / 12.0 ) / pluginData.sampleRate
-
-          # Fix: modify the voice in the sequence directly
-          pluginData.voices[j].phase = phase
-          pluginData.voices[j].phase -= floor(pluginData.voices[j].phase)
-
-        echo "Total sum for frame ", index, ": ", sum
-        process.audioOutputs[0].data32[0][index] = sum
-        process.audioOutputs[0].data32[1][index] = sum
-
+      # Render audio from current position to next event
+      PluginRenderAudio(pluginData, i, nextEventFrame, outputL, outputR)
       i = nextEventFrame
 
-    for i in 0..<pluginData.voices.len:
-      var voice = pluginData.voices[i]
-      if not voice.held:
+    # Clean up finished voices
+    var idx = pluginData.voices.len
+    while idx > 0:
+      idx -= 1
+      if not pluginData.voices[idx].held:
+        let voice = pluginData.voices[idx]
         var event: ClapEventNote
         event.header.size = cast[uint32](sizeof(event))
         event.header.time = 0
@@ -209,11 +190,9 @@ let pluginClass: ClapPlugin = ClapPlugin(
         event.note_id = voice.note_id
         event.channel = voice.channel
         event.port_index = 0
-        discard process.outEvents.tryPush(process.outEvents, event.header.addr)
-        pluginData.voices.del(i - 1)
+        if process.outEvents.tryPushEvent(event.header.addr):
+          pluginData.voices.delete(idx)
 
-
-    echo "=== PROCESS END ==="
     return CLAP_PROCESS_CONTINUE,
   get_extension: proc (plugin: ptr clap_plugin; id: cstring): pointer {.cdecl.} =
     if id == CLAP_EXT_NOTE_PORTS:

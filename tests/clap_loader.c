@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // Include CLAP headers from the root clap directory
 #include "../clap/include/clap/entry.h"
@@ -28,6 +29,33 @@
     #define CLOSE_LIBRARY(handle) dlclose(handle)
     #define LIB_ERROR() dlerror()
 #endif
+
+// Helper functions for test event queue
+static uint32_t test_input_events_size(const clap_input_events_t *list) {
+    // Our extended structure that includes the standard fields plus our data
+    struct test_input_events_ext {
+        void *ctx;
+        uint32_t(CLAP_ABI *size)(const struct clap_input_events *list);
+        const clap_event_header_t *(CLAP_ABI *get)(const struct clap_input_events *list, uint32_t index);
+        const clap_event_header_t** events;
+        uint32_t count;
+    } *test_events = (struct test_input_events_ext *)list;
+    return test_events->count;
+}
+
+static const clap_event_header_t *test_input_events_get(const clap_input_events_t *list, uint32_t index) {
+    struct test_input_events_ext {
+        void *ctx;
+        uint32_t(CLAP_ABI *size)(const struct clap_input_events *list);
+        const clap_event_header_t *(CLAP_ABI *get)(const struct clap_input_events *list, uint32_t index);
+        const clap_event_header_t** events;
+        uint32_t count;
+    } *test_events = (struct test_input_events_ext *)list;
+    
+    if (index >= test_events->count)
+        return NULL;
+    return test_events->events[index];
+}
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -312,6 +340,67 @@ int main(int argc, char *argv[]) {
                                                             .constant_mask = 0
                                                         };
                                                         
+                                                        // Create test events - D#4 note
+                                                        const int NOTE_KEY = 63;  // D#4 (MIDI note number)
+                                                        const uint32_t NOTE_ON_TIME = 100;  // Start at sample 100
+                                                        const uint32_t NOTE_OFF_TIME = 400; // End at sample 400
+                                                        
+                                                        printf("    Creating test note events: D#4 (key=%d), on at sample %u, off at sample %u\n", 
+                                                               NOTE_KEY, NOTE_ON_TIME, NOTE_OFF_TIME);
+                                                        
+                                                        // Create note events
+                                                        clap_event_note_t note_on_event = {
+                                                            .header = {
+                                                                .size = sizeof(clap_event_note_t),
+                                                                .time = NOTE_ON_TIME,
+                                                                .space_id = CLAP_CORE_EVENT_SPACE_ID,
+                                                                .type = CLAP_EVENT_NOTE_ON,
+                                                                .flags = 0
+                                                            },
+                                                            .note_id = -1,  // Use wildcard
+                                                            .port_index = 0,
+                                                            .channel = 0,
+                                                            .key = NOTE_KEY,
+                                                            .velocity = 0.8
+                                                        };
+                                                        
+                                                        clap_event_note_t note_off_event = {
+                                                            .header = {
+                                                                .size = sizeof(clap_event_note_t),
+                                                                .time = NOTE_OFF_TIME,
+                                                                .space_id = CLAP_CORE_EVENT_SPACE_ID,
+                                                                .type = CLAP_EVENT_NOTE_OFF,
+                                                                .flags = 0
+                                                            },
+                                                            .note_id = -1,  // Use wildcard
+                                                            .port_index = 0,
+                                                            .channel = 0,
+                                                            .key = NOTE_KEY,
+                                                            .velocity = 0.0
+                                                        };
+                                                        
+                                                        // Create event array
+                                                        const clap_event_header_t* test_events[2] = {
+                                                            &note_on_event.header,
+                                                            &note_off_event.header
+                                                        };
+                                                        
+                                                        // Create input events structure that matches clap_input_events layout
+                                                        struct {
+                                                            void *ctx;  // Must match clap_input_events layout
+                                                            uint32_t(CLAP_ABI *size)(const struct clap_input_events *list);
+                                                            const clap_event_header_t *(CLAP_ABI *get)(const struct clap_input_events *list, uint32_t index);
+                                                            // Our custom data after the standard fields
+                                                            const clap_event_header_t** events;
+                                                            uint32_t count;
+                                                        } input_events = {
+                                                            .ctx = NULL,
+                                                            .size = test_input_events_size,
+                                                            .get = test_input_events_get,
+                                                            .events = test_events,
+                                                            .count = 2
+                                                        };
+                                                        
                                                         clap_process_t process_context = {
                                                             .steady_time = -1,
                                                             .frames_count = 512,
@@ -320,7 +409,7 @@ int main(int argc, char *argv[]) {
                                                             .audio_outputs = &audio_outputs,
                                                             .audio_inputs_count = 0,
                                                             .audio_outputs_count = 1,
-                                                            .in_events = NULL,
+                                                            .in_events = (const clap_input_events_t*)&input_events,
                                                             .out_events = NULL
                                                         };
                                                         
@@ -334,6 +423,34 @@ int main(int argc, char *argv[]) {
                                                             case CLAP_PROCESS_SLEEP: printf(" (SLEEP)\n"); break;
                                                             default: printf(" (UNKNOWN)\n"); break;
                                                         }
+                                                        
+                                                        // Check if audio was generated
+                                                        float max_sample = 0.0f;
+                                                        int non_zero_samples = 0;
+                                                        for (int i = 0; i < 512; i++) {
+                                                            if (dummy_output_left[i] != 0.0f || dummy_output_right[i] != 0.0f) {
+                                                                non_zero_samples++;
+                                                                float sample = fabs(dummy_output_left[i]);
+                                                                if (sample > max_sample) max_sample = sample;
+                                                                sample = fabs(dummy_output_right[i]);
+                                                                if (sample > max_sample) max_sample = sample;
+                                                            }
+                                                        }
+                                                        printf("    Audio output: %d non-zero samples, max amplitude: %.4f\n", 
+                                                               non_zero_samples, max_sample);
+                                                        
+                                                        // Print samples around note events for debugging
+                                                        printf("    Samples around note-on (100): ");
+                                                        for (int i = 98; i < 103 && i < 512; i++) {
+                                                            printf("%.3f ", dummy_output_left[i]);
+                                                        }
+                                                        printf("\n");
+                                                        
+                                                        printf("    Samples around note-off (400): ");
+                                                        for (int i = 398; i < 403 && i < 512; i++) {
+                                                            printf("%.3f ", dummy_output_left[i]);
+                                                        }
+                                                        printf("\n");
                                                     }
                                                     
                                                     // Test reset()

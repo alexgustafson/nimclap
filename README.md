@@ -1,6 +1,13 @@
-This will be a full implmenetation of the clap audio plugin ABI. 
-There are some scripts that convert and prepare the clap c header files to nim.
-This is still a work in progress, not functional yet.
+See hello_clap.nim for a working example. This code is based on nakst's clap
+tutorial https://nakst.gitlab.io/tutorial/clap-part-1.html. Only the first bit is implemented to keep it simple.
+
+It can be built using the nimble comamnd:
+```bash
+nimble build_hello
+```
+
+The plugin_template.nim version isn't working yet. This will be implemented shortly.
+
 
 ## Testing
 

@@ -1,7 +1,7 @@
 # This is just an example to get you started. A typical library package
 # exports the main API in this file. Note that you cannot rename this file
 # but you can remove it if you wish.
-
+import std/math
 import nimclap/clap/version
 import nimclap/clap/plugin
 import nimclap/clap/pluginfeatures
@@ -141,3 +141,12 @@ proc getChannelData32*(buffer: ptr ClapAudioBuffer, channel: uint32): ptr Unchec
 # Template for safe pointer field access
 template safeAccess*[T](p: ptr T, field: untyped, default: untyped): untyped =
   if p.isNil: default else: p.field
+
+
+proc keyNumberToFrequency*(keyNumber: int): float =
+  const A440 = 440.0
+  return A440 * pow(2.0, (keyNumber.float - 69) / 12.0)
+
+proc phaseIncrementForFrequency*(frequency: float, sampleRate: float): float =
+  return
+

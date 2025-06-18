@@ -68,7 +68,7 @@ proc PluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint3
       sum += sin(voice.phase * 2.0 * PI) * 0.2
 
       # Calculate frequency and phase increment
-      let frequency = 440.0 * pow(2.0, (cast[float](voice.key) - 57.0) / 12.0)
+      let frequency = keyNumberToFrequency(voice.key)
       let phaseIncrement = frequency / plugin.sampleRate
 
       # Advance phase

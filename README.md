@@ -1,4 +1,4 @@
-See hello_clap.nim for a working example. This code is based on nakst's clap
+See `examples/hello_clap.nim` for a working example. This code is based on nakst's clap
 tutorial https://nakst.gitlab.io/tutorial/clap-part-1.html. Only the first bit is implemented to keep it simple.
 
 It can be built using the nimble comamnd:

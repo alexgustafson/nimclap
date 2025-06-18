@@ -40,6 +40,10 @@ const
 const
   CLAP_PLUGIN_FEATURE_SYNTHESIZER* = "synthesizer"
   CLAP_PLUGIN_FEATURE_SAMPLER* = "sampler"
+
+##  For single drum
+
+const
   CLAP_PLUGIN_FEATURE_DRUM* = "drum"
   CLAP_PLUGIN_FEATURE_DRUM_MACHINE* = "drum-machine"
   CLAP_PLUGIN_FEATURE_FILTER* = "filter"
@@ -64,6 +68,10 @@ const
   CLAP_PLUGIN_FEATURE_GLITCH* = "glitch"
   CLAP_PLUGIN_FEATURE_UTILITY* = "utility"
   CLAP_PLUGIN_FEATURE_PITCH_CORRECTION* = "pitch-correction"
+
+##  repair the sound
+
+const
   CLAP_PLUGIN_FEATURE_RESTORATION* = "restoration"
   CLAP_PLUGIN_FEATURE_MULTI_EFFECTS* = "multi-effects"
   CLAP_PLUGIN_FEATURE_MIXING* = "mixing"

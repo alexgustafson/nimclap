@@ -42,10 +42,10 @@ type
   clap_event_trigger* {.bycopy.} = object
     header*: clap_event_header
     ##  target trigger
-    trigger_id*: clap_id
     ##  @ref clap_trigger_info.id
-    cookie*: pointer
+    trigger_id*: clap_id
     ##  @ref clap_trigger_info.cookie
+    cookie*: pointer
     ##  target a specific note_id, port, key and channel, -1 for global
     note_id*: int32
     port_index*: int16

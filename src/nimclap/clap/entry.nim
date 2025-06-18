@@ -55,8 +55,8 @@ import
 
 type
   clap_plugin_entry* {.bycopy.} = object
-    clap_version*: clap_version
     ##  initialized to CLAP_VERSION
+    clap_version*: clap_version
     ##  Initializes the DSO.
     ##
     ##  This function must be called first, before any-other CLAP-related function or symbol from this

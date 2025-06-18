@@ -33,8 +33,8 @@ type
     ##  id identifies a port and must be stable.
     ##  id may overlap between input and output ports.
     id*: clap_id
-    name*: array[CLAP_NAME_SIZE, char]
     ##  displayable name
+    name*: array[CLAP_NAME_SIZE, char]
     flags*: uint32
     channel_count*: uint32
     ##  If null or empty then it is unspecified (arbitrary audio).

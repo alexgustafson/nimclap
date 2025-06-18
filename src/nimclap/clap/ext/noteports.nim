@@ -23,12 +23,12 @@ type
     ##  id identifies a port and must be stable.
     ##  id may overlap between input and output ports.
     id*: clap_id
-    supported_dialects*: uint32
     ##  bitfield, see clap_note_dialect
-    preferred_dialect*: uint32
+    supported_dialects*: uint32
     ##  one value of clap_note_dialect
-    name*: array[CLAP_NAME_SIZE, char]
+    preferred_dialect*: uint32
     ##  displayable name, i18n?
+    name*: array[CLAP_NAME_SIZE, char]
 
 
 ##  The note ports scan has to be done while the plugin is deactivated.

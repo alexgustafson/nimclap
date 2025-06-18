@@ -15,14 +15,14 @@ import
 
 type
   clap_istream* {.bycopy.} = object
-    ctx*: pointer
     ##  reserved pointer for the stream
+    ctx*: pointer
     ##  returns the number of bytes read; 0 indicates end of file and -1 a read error
     read*: proc (stream: ptr clap_istream; buffer: pointer; size: uint64): int64 {.cdecl.}
 
   clap_ostream* {.bycopy.} = object
-    ctx*: pointer
     ##  reserved pointer for the stream
+    ctx*: pointer
     ##  returns the number of bytes written; -1 on write error
     write*: proc (stream: ptr clap_ostream; buffer: pointer; size: uint64): int64 {.cdecl.}
 

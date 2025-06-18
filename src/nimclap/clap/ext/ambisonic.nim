@@ -27,10 +27,10 @@ type
 
 type
   clap_ambisonic_config* {.bycopy.} = object
-    ordering*: uint32
     ##  see clap_ambisonic_ordering
-    normalization*: uint32
+    ordering*: uint32
     ##  see clap_ambisonic_normalization
+    normalization*: uint32
 
   clap_plugin_ambisonic* {.bycopy.} = object
     ##  Returns true if the given configuration is supported.

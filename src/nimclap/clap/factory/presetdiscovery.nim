@@ -81,8 +81,8 @@ type
 
 type
   clap_preset_discovery_metadata_receiver* {.bycopy.} = object
-    receiver_data*: pointer
     ##  reserved pointer for the metadata receiver
+    receiver_data*: pointer
     ##  If there is an error reading metadata from a file this should be called with an error
     ##  message.
     ##  os_error: the operating system error, if applicable. If not applicable set it to a non-error
@@ -146,8 +146,8 @@ type
 
   clap_preset_discovery_filetype* {.bycopy.} = object
     name*: cstring
-    description*: cstring
     ##  optional
+    description*: cstring
     ##  `.' isn't included in the string.
     ##  If empty or NULL then every file should be matched.
     file_extension*: cstring
@@ -157,12 +157,12 @@ type
 
 type
   clap_preset_discovery_location* {.bycopy.} = object
-    flags*: uint32
     ##  see enum clap_preset_discovery_flags
-    name*: cstring
+    flags*: uint32
     ##  name of this location
-    kind*: uint32
+    name*: cstring
     ##  See clap_preset_discovery_location_kind
+    kind*: uint32
     ##  Actual location in which to crawl presets.
     ##  For FILE kind, the location can be either a path to a directory or a file.
     ##  For PLUGIN kind, the location must be null.
@@ -173,36 +173,36 @@ type
 
 type
   clap_preset_discovery_soundpack* {.bycopy.} = object
-    flags*: uint32
     ##  see enum clap_preset_discovery_flags
-    id*: cstring
+    flags*: uint32
     ##  sound pack identifier
-    name*: cstring
+    id*: cstring
     ##  name of this sound pack
-    description*: cstring
+    name*: cstring
     ##  optional, reasonably short description of the sound pack
-    homepage_url*: cstring
+    description*: cstring
     ##  optional, url to the pack's homepage
-    vendor*: cstring
+    homepage_url*: cstring
     ##  optional, sound pack's vendor
-    image_path*: cstring
+    vendor*: cstring
     ##  optional, an image on disk
-    release_timestamp*: clap_timestamp
+    image_path*: cstring
     ##  release date, CLAP_TIMESTAMP_UNKNOWN if unavailable
+    release_timestamp*: clap_timestamp
 
 
 ##  Describes a preset provider
 
 type
   clap_preset_discovery_provider_descriptor* {.bycopy.} = object
-    clap_version*: clap_version
     ##  initialized to CLAP_VERSION
-    id*: cstring
+    clap_version*: clap_version
     ##  see plugin.h for advice on how to choose a good identifier
-    name*: cstring
+    id*: cstring
     ##  eg: "Diva's preset provider"
-    vendor*: cstring
+    name*: cstring
     ##  optional, eg: u-he
+    vendor*: cstring
 
 
 ##  This interface isn't thread-safe.
@@ -210,8 +210,8 @@ type
 type
   clap_preset_discovery_provider* {.bycopy.} = object
     desc*: ptr clap_preset_discovery_provider_descriptor
-    provider_data*: pointer
     ##  reserved pointer for the provider
+    provider_data*: pointer
     ##  Initialize the preset provider.
     ##  It should declare all its locations, filetypes and sound packs.
     ##  Returns false if initialization failed.
@@ -235,18 +235,18 @@ type
 
 type
   clap_preset_discovery_indexer* {.bycopy.} = object
-    clap_version*: clap_version
     ##  initialized to CLAP_VERSION
-    name*: cstring
+    clap_version*: clap_version
     ##  eg: "Bitwig Studio"
-    vendor*: cstring
+    name*: cstring
     ##  optional, eg: "Bitwig GmbH"
-    url*: cstring
+    vendor*: cstring
     ##  optional, eg: "https://bitwig.com"
-    version*: cstring
+    url*: cstring
     ##  optional, eg: "4.3", see plugin.h for advice on how to format the version
-    indexer_data*: pointer
+    version*: cstring
     ##  reserved pointer for the indexer
+    indexer_data*: pointer
     ##  Declares a preset filetype.
     ##  Don't callback into the provider during this call.
     ##  Returns false if the filetype is invalid.

@@ -78,12 +78,12 @@ type
     cocoa*: clap_nsview
     x11*: clap_xwnd
     win32*: clap_hwnd
-    `ptr`*: pointer
     ##  for anything defined outside of clap
+    `ptr`*: pointer
 
   clap_window* {.bycopy.} = object
-    api*: cstring
     ##  one of CLAP_WINDOW_API_XXX
+    api*: cstring
     ano_gui_prepared_3*: INNER_C_UNION_gui_prepared_2
 
 

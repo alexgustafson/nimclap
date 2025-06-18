@@ -10,17 +10,17 @@ let CLAP_EXT_TUNING*: cstring = cstring"clap.tuning/2"
 type
   clap_event_tuning* {.bycopy.} = object
     header*: clap_event_header
-    port_index*: int16
     ##  -1 global
-    channel*: int16
+    port_index*: int16
     ##  0..15, -1 global
+    channel*: int16
     tunning_id*: clap_id
 
   clap_tuning_info* {.bycopy.} = object
     tuning_id*: clap_id
     name*: array[CLAP_NAME_SIZE, char]
-    is_dynamic*: bool
     ##  true if the values may vary with time
+    is_dynamic*: bool
 
   clap_plugin_tuning* {.bycopy.} = object
     ##  Called when a tuning is added or removed from the pool.

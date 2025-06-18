@@ -11,16 +11,16 @@ import
 
 type
   clap_event_header* {.bycopy.} = object
-    size*: uint32
     ##  event size including this header, eg: sizeof (clap_event_note)
-    time*: uint32
+    size*: uint32
     ##  sample offset within the buffer for this event
-    space_id*: uint16
+    time*: uint32
     ##  event space, see clap_host_event_registry
-    `type`*: uint16
+    space_id*: uint16
     ##  event type
-    flags*: uint32
+    `type`*: uint16
     ##  see clap_event_flags
+    flags*: uint32
 
 
 ##  The clap core event space
@@ -106,11 +106,11 @@ const ##  NOTE_ON and NOTE_OFF represent a key pressed and key released event, r
                          ##  the user experience a lot when recording automation or overriding automation playback.
                          ##  Uses clap_event_param_gesture.
   CLAP_EVENT_PARAM_GESTURE_BEGIN* = 7
-  CLAP_EVENT_PARAM_GESTURE_END* = 8
-  CLAP_EVENT_TRANSPORT* = 9     ##  update the transport info; clap_event_transport
-  CLAP_EVENT_MIDI* = 10         ##  raw midi event; clap_event_midi
-  CLAP_EVENT_MIDI_SYSEX* = 11   ##  raw midi sysex event; clap_event_midi_sysex
-  CLAP_EVENT_MIDI2* = 12        ##  raw midi 2 event; clap_event_midi2
+  CLAP_EVENT_PARAM_GESTURE_END* = 8 ##  update the transport info; clap_event_transport
+  CLAP_EVENT_TRANSPORT* = 9     ##  raw midi event; clap_event_midi
+  CLAP_EVENT_MIDI* = 10         ##  raw midi sysex event; clap_event_midi_sysex
+  CLAP_EVENT_MIDI_SYSEX* = 11   ##  raw midi 2 event; clap_event_midi2
+  CLAP_EVENT_MIDI2* = 12
 
 ##  Note on, off, end and choke events.
 ##
@@ -154,16 +154,16 @@ const ##  NOTE_ON and NOTE_OFF represent a key pressed and key released event, r
 type
   clap_event_note* {.bycopy.} = object
     header*: clap_event_header
-    note_id*: int32
     ##  host provided note id >= 0, or -1 if unspecified or wildcard
-    port_index*: int16
+    note_id*: int32
     ##  port index from ext/note-ports; -1 for wildcard
-    channel*: int16
+    port_index*: int16
     ##  0..15, same as MIDI1 Channel Number, -1 for wildcard
-    key*: int16
+    channel*: int16
     ##  0..127, same as MIDI1 Key Number (60==Middle C), -1 for wildcard
-    velocity*: cdouble
+    key*: int16
     ##  0..1
+    velocity*: cdouble
 
 
 ##  Note Expressions are well named modifications of a voice targeted to
@@ -204,16 +204,16 @@ type
     port_index*: int16
     channel*: int16
     key*: int16
-    value*: cdouble
     ##  see expression for the range
+    value*: cdouble
 
   clap_event_param_value* {.bycopy.} = object
     header*: clap_event_header
     ##  target parameter
-    param_id*: clap_id
     ##  @ref clap_param_info.id
-    cookie*: pointer
+    param_id*: clap_id
     ##  @ref clap_param_info.cookie
+    cookie*: pointer
     ##  target a specific note_id, port, key and channel, with
     ##  -1 meaning wildcard, per the wildcard discussion above
     note_id*: int32
@@ -225,24 +225,24 @@ type
   clap_event_param_mod* {.bycopy.} = object
     header*: clap_event_header
     ##  target parameter
-    param_id*: clap_id
     ##  @ref clap_param_info.id
-    cookie*: pointer
+    param_id*: clap_id
     ##  @ref clap_param_info.cookie
+    cookie*: pointer
     ##  target a specific note_id, port, key and channel, with
     ##  -1 meaning wildcard, per the wildcard discussion above
     note_id*: int32
     port_index*: int16
     channel*: int16
     key*: int16
-    amount*: cdouble
     ##  modulation amount
+    amount*: cdouble
 
   clap_event_param_gesture* {.bycopy.} = object
     header*: clap_event_header
     ##  target parameter
-    param_id*: clap_id
     ##  @ref clap_param_info.id
+    param_id*: clap_id
 
   clap_transport_flags* = enum
     CLAP_TRANSPORT_HAS_TEMPO = 1 shl 0, CLAP_TRANSPORT_HAS_BEATS_TIMELINE = 1 shl 1,
@@ -262,29 +262,29 @@ type
 type
   clap_event_transport* {.bycopy.} = object
     header*: clap_event_header
-    flags*: uint32
     ##  see clap_transport_flags
-    song_pos_beats*: clap_beattime
+    flags*: uint32
     ##  position in beats
-    song_pos_seconds*: clap_sectime
+    song_pos_beats*: clap_beattime
     ##  position in seconds
-    tempo*: cdouble
+    song_pos_seconds*: clap_sectime
     ##  in bpm
-    tempo_inc*: cdouble
+    tempo*: cdouble
     ##  tempo increment for each sample and until the next
+    tempo_inc*: cdouble
     ##  time info event
     loop_start_beats*: clap_beattime
     loop_end_beats*: clap_beattime
     loop_start_seconds*: clap_sectime
     loop_end_seconds*: clap_sectime
-    bar_start*: clap_beattime
     ##  start pos of the current bar
-    bar_number*: int32
+    bar_start*: clap_beattime
     ##  bar at song pos 0 has the number 0
-    tsig_num*: uint16
+    bar_number*: int32
     ##  time signature numerator
-    tsig_denom*: uint16
+    tsig_num*: uint16
     ##  time signature denominator
+    tsig_denom*: uint16
 
   clap_event_midi* {.bycopy.} = object
     header*: clap_event_header
@@ -313,8 +313,8 @@ type
   clap_event_midi_sysex* {.bycopy.} = object
     header*: clap_event_header
     port_index*: uint16
-    buffer*: ptr uint8
     ##  midi buffer. See lifetime comment above.
+    buffer*: ptr uint8
     size*: uint32
 
 
@@ -332,8 +332,8 @@ type
 
 type
   clap_input_events* {.bycopy.} = object
-    ctx*: pointer
     ##  reserved pointer for the list
+    ctx*: pointer
     ##  returns the number of events in the list
     size*: proc (list: ptr clap_input_events): uint32 {.cdecl.}
     ##  Don't free the returned event, it belongs to the list
@@ -345,8 +345,8 @@ type
 
 type
   clap_output_events* {.bycopy.} = object
-    ctx*: pointer
     ##  reserved pointer for the list
+    ctx*: pointer
     ##  Pushes a copy of the event
     ##  returns false if the event could not be pushed to the queue (out of memory?)
     try_push*: proc (list: ptr clap_output_events; event: ptr clap_event_header): bool {.

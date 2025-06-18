@@ -22,8 +22,8 @@ const
 
 type
   clap_track_info* {.bycopy.} = object
-    flags*: uint64
     ##  see the flags above
+    flags*: uint64
     ##  track name, available if flags contain CLAP_TRACK_INFO_HAS_TRACK_NAME
     name*: array[CLAP_NAME_SIZE, char]
     ##  track color, available if flags contain CLAP_TRACK_INFO_HAS_TRACK_COLOR

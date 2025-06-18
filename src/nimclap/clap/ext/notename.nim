@@ -6,12 +6,12 @@ let CLAP_EXT_NOTE_NAME*: cstring = cstring"clap.note-name"
 type
   clap_note_name* {.bycopy.} = object
     name*: array[CLAP_NAME_SIZE, char]
-    port*: int16
     ##  -1 for every port
-    key*: int16
+    port*: int16
     ##  -1 for every key
-    channel*: int16
+    key*: int16
     ##  -1 for every channel
+    channel*: int16
 
   clap_plugin_note_name* {.bycopy.} = object
     ##  Return the number of note names

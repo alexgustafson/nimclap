@@ -3,19 +3,19 @@ import
 
 type
   clap_host* {.bycopy.} = object
-    clap_version*: clap_version
     ##  initialized to CLAP_VERSION
-    host_data*: pointer
+    clap_version*: clap_version
     ##  reserved pointer for the host
+    host_data*: pointer
     ##  name and version are mandatory.
-    name*: cstring
     ##  eg: "Bitwig Studio"
-    vendor*: cstring
+    name*: cstring
     ##  eg: "Bitwig GmbH"
-    url*: cstring
+    vendor*: cstring
     ##  eg: "https://bitwig.com"
-    version*: cstring
+    url*: cstring
     ##  eg: "4.3", see plugin.h for advice on how to format the version
+    version*: cstring
     ##  Query an extension.
     ##  The returned pointer is owned by the host.
     ##  It is forbidden to call it before plugin->init().

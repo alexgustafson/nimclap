@@ -4,8 +4,8 @@ import
 
 type
   clap_plugin_descriptor* {.bycopy.} = object
-    clap_version*: clap_version
     ##  initialized to CLAP_VERSION
+    clap_version*: clap_version
     ##  Mandatory fields must be set and must not be blank.
     ##  Otherwise the fields can be null or blank, though it is safer to make them blank.
     ##
@@ -16,22 +16,22 @@ type
     ##    it is useful for the host to understand and be able to compare two different
     ##    version strings, so here is a regex like expression which is likely to be
     ##    understood by most hosts: MAJOR(.MINOR(.REVISION)?)?( (Alpha|Beta) XREV)?
-    id*: cstring
     ##  eg: "com.u-he.diva", mandatory
-    name*: cstring
+    id*: cstring
     ##  eg: "Diva", mandatory
-    vendor*: cstring
+    name*: cstring
     ##  eg: "u-he"
-    url*: cstring
+    vendor*: cstring
     ##  eg: "https://u-he.com/products/diva/"
-    manual_url*: cstring
+    url*: cstring
     ##  eg: "https://dl.u-he.com/manuals/plugins/diva/Diva-user-guide.pdf"
-    support_url*: cstring
+    manual_url*: cstring
     ##  eg: "https://u-he.com/support/"
-    version*: cstring
+    support_url*: cstring
     ##  eg: "1.4.4"
-    description*: cstring
+    version*: cstring
     ##  eg: "The spirit of analogue"
+    description*: cstring
     ##  Arbitrary list of keywords.
     ##  They can be matched by the host indexer and used to classify the plugin.
     ##  The array of pointers must be null terminated.
@@ -40,8 +40,8 @@ type
 
   clap_plugin* {.bycopy.} = object
     desc*: ptr clap_plugin_descriptor
-    plugin_data*: pointer
     ##  reserved pointer for the plugin
+    plugin_data*: pointer
     ##  Must be called after creating the plugin.
     ##  If init returns false, the host must destroy the plugin instance.
     ##  If init returns true, then the plugin is initialized and in the deactivated state.

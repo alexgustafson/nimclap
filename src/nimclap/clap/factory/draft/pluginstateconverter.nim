@@ -6,16 +6,16 @@ type
     clap_version*: clap_version
     src_plugin_id*: clap_universal_plugin_id
     dst_plugin_id*: clap_universal_plugin_id
-    id*: cstring
     ##  eg: "com.u-he.diva-converter", mandatory
-    name*: cstring
+    id*: cstring
     ##  eg: "Diva Converter", mandatory
-    vendor*: cstring
+    name*: cstring
     ##  eg: "u-he"
-    version*: cstring
+    vendor*: cstring
     ##  eg: 1.1.5
-    description*: cstring
+    version*: cstring
     ##  eg: "Official state converter for u-he Diva."
+    description*: cstring
 
 
 ##  This interface provides a mechanism for the host to convert a plugin state and its automation

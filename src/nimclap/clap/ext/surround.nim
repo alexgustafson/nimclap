@@ -32,27 +32,27 @@ let CLAP_EXT_SURROUND_COMPAT*: cstring = cstring"clap.surround.draft/4"
 
 let CLAP_PORT_SURROUND*: cstring = cstring"surround"
 
-const
-  CLAP_SURROUND_FL* = 0         ##  Front Left
-  CLAP_SURROUND_FR* = 1         ##  Front Right
-  CLAP_SURROUND_FC* = 2         ##  Front Center
-  CLAP_SURROUND_LFE* = 3        ##  Low Frequency
-  CLAP_SURROUND_BL* = 4         ##  Back (Rear) Left
-  CLAP_SURROUND_BR* = 5         ##  Back (Rear) Right
-  CLAP_SURROUND_FLC* = 6        ##  Front Left of Center
-  CLAP_SURROUND_FRC* = 7        ##  Front Right of Center
-  CLAP_SURROUND_BC* = 8         ##  Back (Rear) Center
-  CLAP_SURROUND_SL* = 9         ##  Side Left
-  CLAP_SURROUND_SR* = 10        ##  Side Right
-  CLAP_SURROUND_TC* = 11        ##  Top (Height) Center
-  CLAP_SURROUND_TFL* = 12       ##  Top (Height) Front Left
-  CLAP_SURROUND_TFC* = 13       ##  Top (Height) Front Center
-  CLAP_SURROUND_TFR* = 14       ##  Top (Height) Front Right
-  CLAP_SURROUND_TBL* = 15       ##  Top (Height) Back (Rear) Left
-  CLAP_SURROUND_TBC* = 16       ##  Top (Height) Back (Rear) Center
-  CLAP_SURROUND_TBR* = 17       ##  Top (Height) Back (Rear) Right
-  CLAP_SURROUND_TSL* = 18       ##  Top (Height) Side Left
-  CLAP_SURROUND_TSR* = 19       ##  Top (Height) Side Right
+const                         ##  Front Left
+  CLAP_SURROUND_FL* = 0         ##  Front Right
+  CLAP_SURROUND_FR* = 1         ##  Front Center
+  CLAP_SURROUND_FC* = 2         ##  Low Frequency
+  CLAP_SURROUND_LFE* = 3        ##  Back (Rear) Left
+  CLAP_SURROUND_BL* = 4         ##  Back (Rear) Right
+  CLAP_SURROUND_BR* = 5         ##  Front Left of Center
+  CLAP_SURROUND_FLC* = 6        ##  Front Right of Center
+  CLAP_SURROUND_FRC* = 7        ##  Back (Rear) Center
+  CLAP_SURROUND_BC* = 8         ##  Side Left
+  CLAP_SURROUND_SL* = 9         ##  Side Right
+  CLAP_SURROUND_SR* = 10        ##  Top (Height) Center
+  CLAP_SURROUND_TC* = 11        ##  Top (Height) Front Left
+  CLAP_SURROUND_TFL* = 12       ##  Top (Height) Front Center
+  CLAP_SURROUND_TFC* = 13       ##  Top (Height) Front Right
+  CLAP_SURROUND_TFR* = 14       ##  Top (Height) Back (Rear) Left
+  CLAP_SURROUND_TBL* = 15       ##  Top (Height) Back (Rear) Center
+  CLAP_SURROUND_TBC* = 16       ##  Top (Height) Back (Rear) Right
+  CLAP_SURROUND_TBR* = 17       ##  Top (Height) Side Left
+  CLAP_SURROUND_TSL* = 18       ##  Top (Height) Side Right
+  CLAP_SURROUND_TSR* = 19
 
 type
   clap_plugin_surround* {.bycopy.} = object

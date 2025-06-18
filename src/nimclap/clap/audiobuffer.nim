@@ -25,7 +25,7 @@ type
     data32*: ptr UncheckedArray[ptr UncheckedArray[cfloat]]
     data64*:  ptr UncheckedArray[ptr UncheckedArray[cdouble]]
     channel_count*: uint32
-    latency*: uint32
     ##  latency from/to the audio interface
+    latency*: uint32
     constant_mask*: uint64
 

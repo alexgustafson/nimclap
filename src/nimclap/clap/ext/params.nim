@@ -205,12 +205,12 @@ type
     ##  The module path containing the param, eg: "Oscillators/Wavetable 1".
     ##  '/' will be used as a separator to show a tree-like structure.
     module*: array[CLAP_PATH_SIZE, char]
-    min_value*: cdouble
     ##  Minimum plain value. Must be finite (`std::isfinite` true)
-    max_value*: cdouble
+    min_value*: cdouble
     ##  Maximum plain value. Must be finite
-    default_value*: cdouble
+    max_value*: cdouble
     ##  Default plain value. Must be in [min, max] range.
+    default_value*: cdouble
 
   clap_plugin_params* {.bycopy.} = object
     ##  Returns the number of parameters.

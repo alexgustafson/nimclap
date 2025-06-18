@@ -33,19 +33,33 @@ iterator nimHeaderFiles: string =
                 yield file
 
 
-proc removeAndCreateDirStructure() =
+proc prepareNimDirStructure() =
 
-    echo "\ncreating nimclap directory structure"
+    echo "\npreparing nimclap directory structure"
 
-    removeDir(nimClapDir)
-    createDir(nimClapDir)
-    copyDir(cHeadersDir, nimClapHeadersDir) 
+    # Create the base nimclap directory if it doesn't exist
+    if not dirExists(nimClapDir):
+        createDir(nimClapDir)
 
-    for file in nimHeaderFiles():
-        let filename = file.extractFilename()
-        let filePath = file.parentDir()
-
-        moveFile(file, filepath / filename.replace("-", "_"))
+    # Walk through the C headers directory and copy only .h files
+    for cFile in walkDirRec(cHeadersDir):
+        if cFile.endsWith(".h"):
+            # Calculate relative path from cHeadersDir
+            let relativePath = cFile.relativePath(cHeadersDir)
+            let targetPath = nimClapHeadersDir / relativePath
+            let targetDir = targetPath.parentDir()
+            
+            # Create subdirectories if they don't exist
+            if not dirExists(targetDir):
+                createDir(targetDir)
+            
+            # Copy the header file (will overwrite if exists)
+            copyFile(cFile, targetPath)
+            
+            # Rename files with hyphens to underscores
+            if "-" in targetPath.extractFilename():
+                let newName = targetPath.parentDir() / targetPath.extractFilename().replace("-", "_")
+                moveFile(targetPath, newName)
 
 
 proc preprocessHeaderFiles() = 
@@ -72,7 +86,29 @@ proc preprocessHeaderFiles() =
             if "#include" in newLine.splitWhitespace:
                 newLine = newLine.replace("-", "")
 
-            rs.add newLine & "\n"
+            # Move inline comments to separate lines for better c2nim handling
+            let trimmedLine = newLine.strip()
+            if trimmedLine.len > 0 and not trimmedLine.startsWith("//") and not trimmedLine.startsWith("/*") and not trimmedLine.startsWith("*"):
+                # Look for inline comments (// or /* style)
+                let commentPos = max(newLine.find("//"), newLine.find("/*"))
+                if commentPos > 0:  # Found inline comment (not at start)
+                    let codePart = newLine[0..<commentPos].strip()
+                    let commentPart = newLine[commentPos..^1].strip()
+                    let indentation = newLine[0..<(newLine.len - trimmedLine.len)]
+                    
+                    # Special handling for enum values and similar patterns
+                    if codePart.contains("=") or codePart.endsWith(",") or codePart.endsWith(";"):
+                        # For enum values, typedefs, etc., put comment before the line
+                        rs.add indentation & "// " & commentPart[2..^1].strip() & "\n"
+                        rs.add indentation & codePart & "\n"
+                    else:
+                        # For other cases, keep as separate comment line
+                        rs.add indentation & commentPart & "\n"
+                        rs.add indentation & codePart & "\n"
+                else:
+                    rs.add newLine & "\n"
+            else:
+                rs.add newLine & "\n"
 
         writeFile(pathToFile / filename & "_prepared.h", rs)
 
@@ -98,12 +134,6 @@ proc convertToNim =
 
         var content = readFile(pathToFile/fmt"{nimfilename}.nim")
 
-        #[
-          TODO: tweak the c comments.
-          If there is a comment on the same line as code, move it to a new line above the code.
-          c2nim will do a better job with putting comment at the right place then.
-        ]#
-
         if additional_imports.hasKey(nimfilename):
             content = additional_imports[nimfilename] & content
 
@@ -111,6 +141,7 @@ proc convertToNim =
             if contains(content, replace_line[0]):
                 content = content.replace(replace_line[0], replace_line[1])
 
+        # Write the generated content to the file
         writeFile(pathToFile/fmt"{nimfilename}.nim", content)
 
 
@@ -127,7 +158,7 @@ proc removeCHeaderFiles =
 
 
 when isMainModule:
-    removeAndCreateDirStructure()
+    prepareNimDirStructure()
     preprocessHeaderFiles()
     convertToNim()
     removeCHeaderFiles()

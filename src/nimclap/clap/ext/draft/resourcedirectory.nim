@@ -1,7 +1,6 @@
-import
-  ../../plugin
+import ../../plugin
 
-let CLAP_EXT_RESOURCE_DIRECTORY*: cstring = cstring"clap.resource-directory/1"
+let extResourceDirectory*: cstring = cstring"clap.resource-directory/1"
 
 ##  @page Resource Directory
 ##
@@ -38,37 +37,36 @@ let CLAP_EXT_RESOURCE_DIRECTORY*: cstring = cstring"clap.resource-directory/1"
 ##    but be **very** careful before deleting any resources
 
 type
-  clap_plugin_resource_directory* {.bycopy.} = object
+  PluginResourceDirectory* {.bycopy.} = object
     ##  Sets the directory in which the plugin can save its resources.
     ##  The directory remains valid until it is overridden or the plugin is destroyed.
     ##  If path is null or blank, it clears the directory location.
     ##  path must be absolute.
     ##  [main-thread]
-    set_directory*: proc (plugin: ptr clap_plugin; path: cstring; is_shared: bool) {.
-        cdecl.}
+    setDirectory*: proc(plugin: ptr Plugin, path: cstring, isShared: bool) {.cdecl.}
     ##  Asks the plugin to put its resources into the resource directory.
     ##  It is not necessary to collect files which belongs to the plugin's
     ##  factory content unless the param all is true.
     ##  [main-thread]
-    collect*: proc (plugin: ptr clap_plugin; all: bool) {.cdecl.}
+    collect*: proc(plugin: ptr Plugin, all: bool) {.cdecl.}
     ##  Returns the number of files used by the plugin in the shared resource folder.
     ##  [main-thread]
-    get_files_count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
+    getFilesCount*: proc(plugin: ptr Plugin): uint32 {.cdecl.}
     ##  Retrieves relative file path to the resource directory.
     ##  @param path writable memory to store the path
     ##  @param path_size number of available bytes in path
     ##  Returns the number of bytes in the path, or -1 on error
     ##  [main-thread]
-    get_file_path*: proc (plugin: ptr clap_plugin; index: uint32; path: cstring;
-                        path_size: uint32): int32 {.cdecl.}
+    getFilePath*: proc(
+      plugin: ptr Plugin, index: uint32, path: cstring, pathSize: uint32
+    ): int32 {.cdecl.}
 
-  clap_host_resource_directory* {.bycopy.} = object
+  HostResourceDirectory* {.bycopy.} = object
     ##  Request the host to setup a resource directory with the specified sharing.
     ##  Returns true if the host will perform the request.
     ##  [main-thread]
-    request_directory*: proc (host: ptr clap_host; is_shared: bool): bool {.cdecl.}
+    requestDirectory*: proc(host: ptr Host, isShared: bool): bool {.cdecl.}
     ##  Tell the host that the resource directory of the specified sharing is no longer required.
     ##  If is_shared = false, then the host may delete the directory content.
     ##  [main-thread]
-    release_directory*: proc (host: ptr clap_host; is_shared: bool) {.cdecl.}
-
+    releaseDirectory*: proc(host: ptr Host, isShared: bool) {.cdecl.}

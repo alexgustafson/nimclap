@@ -16,7 +16,7 @@ type MyPlugin = object
   voices: seq[Voice]
 
 
-let pluginDescriptor* {.exportc.}: ClapPluginDescriptor = ClapPluginDescriptor(
+let pluginDescriptor* {.exportc.}: PluginDescriptor = PluginDescriptor(
   clap_version: CLAP_VERSION_INIT,
   id: "nakst.HelloCLAP",
   name: "Hello CLAP",
@@ -34,19 +34,19 @@ let pluginDescriptor* {.exportc.}: ClapPluginDescriptor = ClapPluginDescriptor(
 )
 
 proc PluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
-  if event.spaceId == CLAP_CORE_EVENT_SPACE_ID:
-    if event.type == CLAP_EVENT_NOTE_ON or event.type == CLAP_EVENT_NOTE_OFF or event.type == CLAP_EVENT_NOTE_CHOKE:
+  if event.spaceId == clapCoreEventSpaceId:
+    if event.type == ord(ClapEventTypes.noteOn) or event.type == ord(ClapEventTypes.noteOff) or event.type == ord(ClapEventTypes.noteChoke):
       let noteEvent = cast[ptr ClapEventNote](event)
 
       for i in countdown(plugin.voices.len - 1, 0):
         var voice = addr plugin.voices[i]
         if (noteEvent.key == -1 or voice.key == noteEvent.key) and (noteEvent.noteId == -1 or voice.noteId == noteEvent.noteId) and (noteEvent.channel == -1 or voice.channel == noteEvent.channel):
-          if event.type == CLAP_EVENT_NOTE_CHOKE:
+          if event.type == ord(ClapEventTypes.noteChoke):
             plugin.voices.del(i)
           else:
             voice.held = false
 
-      if event.type == CLAP_EVENT_NOTE_ON:
+      if event.type == ord(ClapEventTypes.noteOn):
         var voice = Voice(
           held: true,
           noteId: noteEvent.noteId,
@@ -88,8 +88,8 @@ let extensionNotePorts = ClapPluginNotePorts(
        return false
     info.id = 0
     info.name.setName("Note Input Port")
-    info.supportedDialects = ord(CLAP_NOTE_DIALECT_CLAP)
-    info.preferredDialect = ord(CLAP_NOTE_DIALECT_CLAP)
+    info.supportedDialects = CLAP_NOTE_DIALECT_CLAP.ord
+    info.preferredDialect = CLAP_NOTE_DIALECT_CLAP.ord
     return true
 )
 
@@ -183,8 +183,8 @@ let pluginClass: ClapPlugin = ClapPlugin(
         var event: ClapEventNote
         event.header.size = cast[uint32](sizeof(event))
         event.header.time = 0
-        event.header.space_id = CLAP_CORE_EVENT_SPACE_ID
-        event.header.type = CLAP_EVENT_NOTE_END
+        event.header.space_id = clapCoreEventSpaceId
+        event.header.type = ord(ClapEventTypes.noteEnd)
         event.header.flags = 0
         event.key = voice.key
         event.note_id = voice.note_id
@@ -211,7 +211,7 @@ var pluginFactory: ClapPluginFactory = ClapPluginFactory(
   get_plugin_descriptor: proc(factory: ptr ClapPluginFactory, index: uint32): ptr ClapPluginDescriptor {.cdecl.} =
     return if index == 0 : pluginDescriptor.addr else: nil,
   create_plugin: proc(factory: ptr ClapPluginFactory, host: ptr ClapHost, pluginId: cstring): ptr ClapPlugin {.cdecl.} =
-    if not clapVersionIsCompatible(host.clapVersion) or pluginId!= pluginDescriptor.id:
+    if not clapVersionIsCompatible(host.clapVersion) or pluginId != pluginDescriptor.id:
       return nil
     var myPlugin: ptr MyPlugin = cast[ptr MyPlugin](allocShared0(sizeof(MyPlugin)))
     myPlugin.host = host

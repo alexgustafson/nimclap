@@ -1,5 +1,4 @@
-import
-  private/std, private/macros
+import private/std, private/macros
 
 ##  @page Streams
 ##
@@ -14,15 +13,14 @@ import
 ##  values for the end of file and IO error codes.
 
 type
-  clap_istream* {.bycopy.} = object
-    ##  reserved pointer for the stream
+  Istream* {.bycopy.} = object
     ctx*: pointer
+    ##  reserved pointer for the stream
     ##  returns the number of bytes read; 0 indicates end of file and -1 a read error
-    read*: proc (stream: ptr clap_istream; buffer: pointer; size: uint64): int64 {.cdecl.}
+    read*: proc(stream: ptr Istream, buffer: pointer, size: uint64): int64 {.cdecl.}
 
-  clap_ostream* {.bycopy.} = object
-    ##  reserved pointer for the stream
+  Ostream* {.bycopy.} = object
     ctx*: pointer
+    ##  reserved pointer for the stream
     ##  returns the number of bytes written; -1 on write error
-    write*: proc (stream: ptr clap_ostream; buffer: pointer; size: uint64): int64 {.cdecl.}
-
+    write*: proc(stream: ptr Ostream, buffer: pointer, size: uint64): int64 {.cdecl.}

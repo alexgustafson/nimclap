@@ -1,5 +1,4 @@
-import
-  ../plugin, ../stringsizes
+import ../plugin, ../stringsizes
 
 ##  This extension let the plugin provide a structured way of mapping parameters to an hardware
 ##  controller.
@@ -29,42 +28,41 @@ import
 ##  Pressing that button once gets you to the first page of the section.
 ##  Press it again to cycle through the section's pages.
 
-let CLAP_EXT_REMOTE_CONTROLS*: cstring = cstring"clap.remote-controls/2"
+let extRemoteControls*: cstring = cstring"clap.remote-controls/2"
 
 ##  The latest draft is 100% compatible
 ##  This compat ID may be removed in 2026.
 
-let CLAP_EXT_REMOTE_CONTROLS_COMPAT*: cstring = cstring"clap.remote-controls.draft/2"
+let extRemoteControlsCompat*: cstring = cstring"clap.remote-controls.draft/2"
 
-const
-  CLAP_REMOTE_CONTROLS_COUNT* = 8
+const remoteControlsCount* = 8
 
 type
-  clap_remote_controls_page* {.bycopy.} = object
-    section_name*: array[CLAP_NAME_SIZE, char]
-    page_id*: clap_id
-    page_name*: array[CLAP_NAME_SIZE, char]
-    param_ids*: array[CLAP_REMOTE_CONTROLS_COUNT, clap_id]
+  RemoteControlsPage* {.bycopy.} = object
+    sectionName*: array[name_Size, char]
+    pageId*: Id
+    pageName*: array[name_Size, char]
+    paramIds*: array[REMOTE_CONTROLS_COUNT, Id]
     ##  This is used to separate device pages versus preset pages.
     ##  If true, then this page is specific to this preset.
-    is_for_preset*: bool
+    isForPreset*: bool
 
-  clap_plugin_remote_controls* {.bycopy.} = object
+  PluginRemoteControls* {.bycopy.} = object
     ##  Returns the number of pages.
     ##  [main-thread]
-    count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
+    count*: proc(plugin: ptr Plugin): uint32 {.cdecl.}
     ##  Get a page by index.
     ##  Returns true on success and stores the result into page.
     ##  [main-thread]
-    get*: proc (plugin: ptr clap_plugin; page_index: uint32;
-              page: ptr clap_remote_controls_page): bool {.cdecl.}
+    get*: proc(
+      plugin: ptr Plugin, pageIndex: uint32, page: ptr RemoteControlsPage
+    ): bool {.cdecl.}
 
-  clap_host_remote_controls* {.bycopy.} = object
+  HostRemoteControls* {.bycopy.} = object
     ##  Informs the host that the remote controls have changed.
     ##  [main-thread]
-    changed*: proc (host: ptr clap_host) {.cdecl.}
+    changed*: proc(host: ptr Host) {.cdecl.}
     ##  Suggest a page to the host because it corresponds to what the user is currently editing in the
     ##  plugin's GUI.
     ##  [main-thread]
-    suggest_page*: proc (host: ptr clap_host; page_id: clap_id) {.cdecl.}
-
+    suggestPage*: proc(host: ptr Host, pageId: Id) {.cdecl.}

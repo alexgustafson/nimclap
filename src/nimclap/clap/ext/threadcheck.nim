@@ -1,8 +1,7 @@
 import ../host
-import
-  ../plugin
+import ../plugin
 
-let CLAP_EXT_THREAD_CHECK*: cstring = cstring"clap.thread-check"
+let extThreadCheck*: cstring = cstring"clap.thread-check"
 
 ##  @page thread-check
 ##
@@ -53,12 +52,10 @@ let CLAP_EXT_THREAD_CHECK*: cstring = cstring"clap.thread-check"
 ##  sure that the functions are called on the correct threads.
 ##  It is highly recommended that hosts implement this extension.
 
-type
-  clap_host_thread_check* {.bycopy.} = object
-    ##  Returns true if "this" thread is the main thread.
-    ##  [thread-safe]
-    is_main_thread*: proc (host: ptr clap_host): bool {.cdecl.}
-    ##  Returns true if "this" thread is one of the audio threads.
-    ##  [thread-safe]
-    is_audio_thread*: proc (host: ptr clap_host): bool {.cdecl.}
-
+type HostThreadCheck* {.bycopy.} = object
+  ##  Returns true if "this" thread is the main thread.
+  ##  [thread-safe]
+  isMainThread*: proc(host: ptr Host): bool {.cdecl.}
+  ##  Returns true if "this" thread is one of the audio threads.
+  ##  [thread-safe]
+  isAudioThread*: proc(host: ptr Host): bool {.cdecl.}

@@ -1,39 +1,36 @@
-import
-  ../plugin
+import ../plugin
 
 ##  This extension let your plugin hook itself into the host select/poll/epoll/kqueue reactor.
 ##  This is useful to handle asynchronous I/O on the main thread.
 
-let CLAP_EXT_POSIX_FD_SUPPORT*: cstring = cstring"clap.posix-fd-support"
+let extPosixFdSupport*: cstring = cstring"clap.posix-fd-support"
 
-const ##  IO events flags, they can be used to form a mask which describes:
-     ##  - which events you are interested in (register_fd/modify_fd)
-     ##  - which events happened (on_fd)
-  CLAP_POSIX_FD_READ* = 1 shl 0
-  CLAP_POSIX_FD_WRITE* = 1 shl 1
-  CLAP_POSIX_FD_ERROR* = 1 shl 2
+const
+  ##  IO events flags, they can be used to form a mask which describes:
+  ##  - which events you are interested in (register_fd/modify_fd)
+  ##  - which events happened (on_fd)
+  posixFdRead* = 1 shl 0
+  posixFdWrite* = 1 shl 1
+  posixFdError* = 1 shl 2
 
 type
-  clap_posix_fd_flags* = uint32
-  clap_plugin_posix_fd_support* {.bycopy.} = object
+  PosixFdFlags* = uint32
+  PluginPosixFdSupport* {.bycopy.} = object
     ##  This callback is "level-triggered".
     ##  It means that a writable fd will continuously produce "on_fd()" events;
     ##  don't forget using modify_fd() to remove the write notification once you're
     ##  done writing.
     ##
     ##  [main-thread]
-    on_fd*: proc (plugin: ptr clap_plugin; fd: cint; flags: clap_posix_fd_flags) {.cdecl.}
+    onFd*: proc(plugin: ptr Plugin, fd: cint, flags: PosixFdFlags) {.cdecl.}
 
-  clap_host_posix_fd_support* {.bycopy.} = object
+  HostPosixFdSupport* {.bycopy.} = object
     ##  Returns true on success.
     ##  [main-thread]
-    register_fd*: proc (host: ptr clap_host; fd: cint; flags: clap_posix_fd_flags): bool {.
-        cdecl.}
+    registerFd*: proc(host: ptr Host, fd: cint, flags: PosixFdFlags): bool {.cdecl.}
     ##  Returns true on success.
     ##  [main-thread]
-    modify_fd*: proc (host: ptr clap_host; fd: cint; flags: clap_posix_fd_flags): bool {.
-        cdecl.}
+    modifyFd*: proc(host: ptr Host, fd: cint, flags: PosixFdFlags): bool {.cdecl.}
     ##  Returns true on success.
     ##  [main-thread]
-    unregister_fd*: proc (host: ptr clap_host; fd: cint): bool {.cdecl.}
-
+    unregisterFd*: proc(host: ptr Host, fd: cint): bool {.cdecl.}

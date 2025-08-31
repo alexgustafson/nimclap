@@ -1,5 +1,4 @@
-import
-  private/std
+import private/std
 
 ##  Sample code for reading a stereo buffer:
 ##
@@ -19,13 +18,10 @@ import
 ##
 ##  The constant mask is a hint.
 
-type
-  clap_audio_buffer* {.bycopy.} = object
-    ##  Either data32 or data64 pointer will be set.
-    data32*: ptr UncheckedArray[ptr UncheckedArray[cfloat]]
-    data64*:  ptr UncheckedArray[ptr UncheckedArray[cdouble]]
-    channel_count*: uint32
-    ##  latency from/to the audio interface
-    latency*: uint32
-    constant_mask*: uint64
-
+type AudioBuffer* {.bycopy.} = object ##  Either data32 or data64 pointer will be set.
+  data32*: ptr UncheckedArray[ptr UncheckedArray[cfloat]]
+  data64*:  ptr UncheckedArray[ptr UncheckedArray[cdouble]]
+  channelCount*: uint32
+  latency*: uint32
+  ##  latency from/to the audio interface
+  constantMask*: uint64

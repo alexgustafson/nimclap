@@ -15,43 +15,37 @@ type
 
 const
   uint32Max* = uint32.high
-  UINT32_MAX* = uint32.high
 """
   privateMacros* = """
 type
     placeholder*  = uint8
 """
-  version_text: string = "let CLAP_VERSION*: clap_version = CLAP_VERSION_INIT"
-  version_replace: string = """
-let CLAP_VERSION*: clap_version = clap_version(
-  major: CLAP_VERSION_MAJOR,
-  minor: CLAP_VERSION_MINOR,
-  revision: CLAP_VERSION_REVISION,
-)
-"""
+  version_text: string = "let VERSION*: Version = versionInit"
+  version_replace: string = "let version*: Version = versionInit"
   unchecked_array_char: string = "UncheckedArray[char] = "
   unchecked_array_char_replace: string = "cstring = cstring"
   audio_buffer_32: string = "data32*: ptr ptr cfloat"
   audio_buffer_32_replace: string = "data32*: ptr UncheckedArray[ptr UncheckedArray[cfloat]]"
   audio_buffer_64: string = "data64*: ptr ptr cdouble"
   audio_buffer_64_replace: string = "data64*:  ptr UncheckedArray[ptr UncheckedArray[cdouble]]"
-  audio_process_inputs: string = "audio_inputs*: ptr clap_audio_buffer"
-  audio_process_inputs_replace: string = "audio_inputs*: ptr UncheckedArray[clap_audio_buffer]"
-  audio_process_outputs: string = "audio_outputs*: ptr clap_audio_buffer"
-  audio_process_outputs_replace: string = "audio_outputs*: ptr UncheckedArray[clap_audio_buffer]"
-  entry_clap_entry: string = "let clap_entry*: clap_plugin_entry"
+  audio_process_inputs: string = "audioInputs*: ptr AudioBuffer"
+  audio_process_inputs_replace: string = "audioInputs*: ptr UncheckedArray[AudioBuffer]"
+  audio_process_outputs: string = "audioOutputs*: ptr AudioBuffer"
+  audio_process_outputs_replace: string = "audioOutputs*: ptr UncheckedArray[AudioBuffer]"
+  entry_clap_entry: string = "let entry*: PluginEntry"
   entry_clap_entry_replace: string = ""
-  version_init: string = """
-  CLAP_VERSION_INIT* = (cast[uint32](CLAP_VERSION_MAJOR),
-    cast[uint32](CLAP_VERSION_MINOR), cast[uint32](CLAP_VERSION_REVISION))
-"""
-  version_init_replace: string = """
-  CLAP_VERSION_INIT*: clap_version = clap_version(
-    major: CLAP_VERSION_MAJOR,
-    minor: CLAP_VERSION_MINOR,
-    revision: CLAP_VERSION_REVISION
-  )
-"""
+  host_clapversion_entry: string = "  version*: Version"
+  host_clapversion_entry_replace: string = "  clapVersion*: Version"
+  version_init: string = """versionInit* = (
+    cast[uint32](versionMajor),
+    cast[uint32](versionMinor),
+    cast[uint32](versionRevision),
+  )"""
+  version_init_replace: string = """versionInit* = Version(
+    major: versionMajor,
+    minor: versionMinor,
+    revision: versionRevision,
+  )"""
 
   replace_strings* = @[
     (version_text, version_replace),
@@ -62,6 +56,7 @@ let CLAP_VERSION*: clap_version = clap_version(
     (audio_process_outputs, audio_process_outputs_replace),
     (entry_clap_entry, entry_clap_entry_replace),
     (version_init, version_init_replace),
+    (host_clapversion_entry, host_clapversion_entry_replace),
   ]
 
   additional_imports* = {
@@ -73,4 +68,5 @@ let CLAP_VERSION*: clap_version = clap_version(
     "noteports": "import ../id, ../host\n",
     "audioports": "import ../id, ../host\n",
     "state": "import ../host\n",
+    "params": "import../id, ../events, ../host\n",
   }.toTable

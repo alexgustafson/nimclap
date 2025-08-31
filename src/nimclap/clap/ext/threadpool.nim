@@ -1,5 +1,4 @@
-import
-  ../plugin
+import ../plugin
 
 ##  @page
 ##
@@ -37,14 +36,13 @@ import
 ##  If the host knows that it is running under hard real-time pressure it may decide to not
 ##  provide this interface.
 
-let CLAP_EXT_THREAD_POOL*: cstring = cstring"clap.thread-pool"
+let extThreadPool*: cstring = cstring"clap.thread-pool"
 
 type
-  clap_plugin_thread_pool* {.bycopy.} = object
-    ##  Called by the thread pool
-    exec*: proc (plugin: ptr clap_plugin; task_index: uint32) {.cdecl.}
+  PluginThreadPool* {.bycopy.} = object ##  Called by the thread pool
+    exec*: proc(plugin: ptr Plugin, taskIndex: uint32) {.cdecl.}
 
-  clap_host_thread_pool* {.bycopy.} = object
+  HostThreadPool* {.bycopy.} = object
     ##  Schedule num_tasks jobs in the host thread pool.
     ##  It can't be called concurrently or from the thread pool.
     ##  Will block until all the tasks are processed.
@@ -53,5 +51,4 @@ type
     ##  The host should check that the plugin is within the process call, and if not, reject the exec
     ##  request.
     ##  [audio-thread]
-    request_exec*: proc (host: ptr clap_host; num_tasks: uint32): bool {.cdecl.}
-
+    requestExec*: proc(host: ptr Host, numTasks: uint32): bool {.cdecl.}

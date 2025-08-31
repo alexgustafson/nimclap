@@ -1,7 +1,5 @@
-import
-  private/std, private/macros
+import private/std, private/macros
 
-type
-  clap_id* = uint32
+type Id* = uint32
 
-let CLAP_INVALID_ID*: clap_id = UINT32_MAX
+let invalidId*: Id = uint32Max

@@ -1,2 +1,1 @@
-type
-    placeholder*  = uint8
+type placeholder* = uint8

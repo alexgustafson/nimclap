@@ -1,5 +1,4 @@
-import
-  ../stringsizes, ../plugin, audioports
+import ../stringsizes, ../plugin, audioports
 
 ##  @page Audio Ports Config
 ##
@@ -22,70 +21,73 @@ import
 ##  To inquire the exact bus layout, the plugin implements the clap_plugin_audio_ports_config_info_t
 ##  extension where all busses can be retrieved in the same way as in the audio-port extension.
 
-let CLAP_EXT_AUDIO_PORTS_CONFIG*: cstring = cstring"clap.audio-ports-config"
+let extAudioPortsConfig*: cstring = cstring"clap.audio-ports-config"
 
-let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO*: cstring = cstring"clap.audio-ports-config-info/1"
+let extAudioPortsConfigInfo*: UncheckedArray[char] =
+  "clap.audio-ports-config-info/1"
 
 ##  The latest draft is 100% compatible.
 ##  This compat ID may be removed in 2026.
 
-let CLAP_EXT_AUDIO_PORTS_CONFIG_INFO_COMPAT*: cstring = cstring"clap.audio-ports-config-info/draft-0"
+let extAudioPortsConfigInfoCompat*: UncheckedArray[char] =
+  "clap.audio-ports-config-info/draft-0"
 
 ##  Minimalistic description of ports configuration
 
-type
-  clap_audio_ports_config* {.bycopy.} = object
-    id*: clap_id
-    name*: array[CLAP_NAME_SIZE, char]
-    input_port_count*: uint32
-    output_port_count*: uint32
-    ##  main input info
-    has_main_input*: bool
-    main_input_channel_count*: uint32
-    main_input_port_type*: cstring
-    ##  main output info
-    has_main_output*: bool
-    main_output_channel_count*: uint32
-    main_output_port_type*: cstring
-
+type AudioPortsConfig* {.bycopy.} = object
+  id*: Id
+  name*: array[name_Size, char]
+  inputPortCount*: uint32
+  outputPortCount*: uint32
+  ##  main input info
+  hasMainInput*: bool
+  mainInputChannelCount*: uint32
+  mainInputPortType*: cstring
+  ##  main output info
+  hasMainOutput*: bool
+  mainOutputChannelCount*: uint32
+  mainOutputPortType*: cstring
 
 ##  The audio ports config scan has to be done while the plugin is deactivated.
 
-type
-  clap_plugin_audio_ports_config* {.bycopy.} = object
-    ##  Gets the number of available configurations
-    ##  [main-thread]
-    count*: proc (plugin: ptr clap_plugin): uint32 {.cdecl.}
-    ##  Gets information about a configuration
-    ##  Returns true on success and stores the result into config.
-    ##  [main-thread]
-    get*: proc (plugin: ptr clap_plugin; index: uint32;
-              config: ptr clap_audio_ports_config): bool {.cdecl.}
-    ##  Selects the configuration designated by id
-    ##  Returns true if the configuration could be applied.
-    ##  Once applied the host should scan again the audio ports.
-    ##  [main-thread & plugin-deactivated]
-    select*: proc (plugin: ptr clap_plugin; config_id: clap_id): bool {.cdecl.}
-
+type PluginAudioPortsConfig* {.bycopy.} = object
+  ##  Gets the number of available configurations
+  ##  [main-thread]
+  count*: proc(plugin: ptr Plugin): uint32 {.cdecl.}
+  ##  Gets information about a configuration
+  ##  Returns true on success and stores the result into config.
+  ##  [main-thread]
+  get*: proc(plugin: ptr Plugin, index: uint32, config: ptr AudioPortsConfig): bool {.
+    cdecl
+  .}
+  ##  Selects the configuration designated by id
+  ##  Returns true if the configuration could be applied.
+  ##  Once applied the host should scan again the audio ports.
+  ##  [main-thread & plugin-deactivated]
+  select*: proc(plugin: ptr Plugin, configId: Id): bool {.cdecl.}
 
 ##  Extended config info
 
 type
-  clap_plugin_audio_ports_config_info* {.bycopy.} = object
+  PluginAudioPortsConfigInfo* {.bycopy.} = object
     ##  Gets the id of the currently selected config, or CLAP_INVALID_ID if the current port
     ##  layout isn't part of the config list.
     ##
     ##  [main-thread]
-    current_config*: proc (plugin: ptr clap_plugin): clap_id {.cdecl.}
+    currentConfig*: proc(plugin: ptr Plugin): Id {.cdecl.}
     ##  Get info about an audio port, for a given config_id.
     ##  This is analogous to clap_plugin_audio_ports.get().
     ##  Returns true on success and stores the result into info.
     ##  [main-thread]
-    get*: proc (plugin: ptr clap_plugin; config_id: clap_id; port_index: uint32;
-              is_input: bool; info: ptr clap_audio_port_info): bool {.cdecl.}
+    get*: proc(
+      plugin: ptr Plugin,
+      configId: Id,
+      portIndex: uint32,
+      isInput: bool,
+      info: ptr AudioPortInfo,
+    ): bool {.cdecl.}
 
-  clap_host_audio_ports_config* {.bycopy.} = object
+  HostAudioPortsConfig* {.bycopy.} = object
     ##  Rescan the full list of configs.
     ##  [main-thread]
-    rescan*: proc (host: ptr clap_host) {.cdecl.}
-
+    rescan*: proc(host: ptr Host) {.cdecl.}

@@ -10,3 +10,5 @@
 build/*.clap
 /tests/clap_loader.*
 !/tests/clap_loader.c
+build
+/scripts/generate_bindings.exe

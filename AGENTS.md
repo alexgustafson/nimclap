@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI Agents when working with code in this repository.
 
 ## Project Overview
 
@@ -11,7 +11,7 @@ This is a Nim wrapper for the CLAP (CLever Audio Plugin) API, enabling the devel
 ### Building Example Plugins
 ```bash
 # Build the C plugin template (not fully working yet)
-nimble build_c_template
+nimble build_example_template
 ```
 
 ### Testing Tools
@@ -34,7 +34,6 @@ nimble generate_bindings
 ### Core Structure
 - `src/nimclap.nim` - Main API exports and type aliases for a more Nim-friendly interface
 - `src/nimclap/clap/` - Auto-generated bindings from CLAP C headers
-- `examples/` - Working plugin examples based on nakst's CLAP tutorial
 
 ### Key Components
 - **Plugin Implementation**: Plugins inherit from `Plugin` and implement callbacks for initialization, processing, and state management

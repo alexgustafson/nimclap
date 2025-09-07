@@ -8,16 +8,22 @@ srcDir        = "src"
 
 
 # Dependencies
-
 requires "nim >= 2.0.0"
+
+# For Generating Bindings
 requires "c2nim >= 0.9.19"
 requires "nph >= 0.6.1"
 
 task generate_bindings, "generate bindings":
   exec("nim r scripts/generate_bindings.nim")
 
-task build_c_template, "Build the C plugin template as a CLAP plugin":
-  exec "nim compile -g --app:lib -o:build/plugin-template.clap examples/plugin_template.nim"
+task build_example_template, "Build the C plugin template as a CLAP plugin":
+  when defined(windows):
+    exec "nim compile -g --app:lib --passL:\"-static-libgcc -static-libstdc++\" -o:build/plugin_template.clap examples/plugin_template.nim"
+  elif defined(macosx):
+    exec "nim compile -g --app:lib -o:build/plugin_template.clap examples/plugin_template.nim"
+  else:  # Linux and other Unix-like systems
+    exec "nim compile -g --app:lib --passL:\"-static-libgcc\" -o:build/plugin_template.clap examples/plugin_template.nim"
 
 task build_hello, "Build hello clap":
   when defined(windows):
@@ -37,9 +43,9 @@ task build_hello2, "Build hello 2 clap":
 
 task build_clap_loader, "Build the CLAP plugin loader test tool":
   when defined(windows):
-    exec "gcc -o tests/clap_loader.exe tests/clap_loader.c"
+    exec "gcc -o build//clap_loader.exe tests/clap_loader.c"
   else:
-    exec "gcc -o tests/clap_loader tests/clap_loader.c -ldl"
+    exec "gcc -o build//clap_loader tests/clap_loader.c -ldl"
 
 
 

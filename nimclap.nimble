@@ -11,8 +11,8 @@ srcDir        = "src"
 requires "nim >= 2.0.0"
 
 # For Generating Bindings
-requires "c2nim >= 0.9.19"
-requires "nph >= 0.6.1"
+# requires "c2nim >= 0.9.19"
+# requires "nph >= 0.6.1"
 
 task generate_bindings, "generate bindings":
   exec("nim r scripts/generate_bindings.nim")
@@ -46,7 +46,6 @@ task build_clap_loader, "Build the CLAP plugin loader test tool":
     exec "gcc -o build//clap_loader.exe tests/clap_loader.c"
   else:
     exec "gcc -o build//clap_loader tests/clap_loader.c -ldl"
-
 
 
 task generate_docs, "Generate Documentation":

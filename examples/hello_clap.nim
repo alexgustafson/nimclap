@@ -1,3 +1,8 @@
+## hello_clap.nim - a minimal CLAP instrument in Nim.
+##
+## Based on nakst's CLAP tutorial: https://nakst.gitlab.io/tutorial/clap-part-1.html
+## Ported to the current hand-maintained nimclap bindings.
+
 import ../src/nimclap
 import std/math
 
@@ -8,46 +13,48 @@ type Voice = object
   key: int16
   phase: float
 
-
 type MyPlugin = object
-  plugin: ClapPlugin
-  host: ptr ClapHost
+  plugin: Plugin
+  host: ptr Host
   sampleRate: float
   voices: seq[Voice]
 
-
-let pluginDescriptor* {.exportc.}: PluginDescriptor = PluginDescriptor(
-  clap_version: CLAP_VERSION_INIT,
-  id: "nakst.HelloCLAP",
-  name: "Hello CLAP",
-  vendor: "nakst",
-  url: "https://nakst.gitlab.io",
-  manual_url: "",
-  support_url: "",
-  version: "1.0.0",
-  description: "The best audio plugin ever.",
+let pluginDescriptor* = PluginDescriptor(
+  clapVersion: versionInit,
+  id: "nakst.HelloCLAP".cstring,
+  name: "Hello CLAP".cstring,
+  vendor: "nakst".cstring,
+  url: "https://nakst.gitlab.io".cstring,
+  manualUrl: "".cstring,
+  supportUrl: "".cstring,
+  version: "1.0.0".cstring,
+  description: "The best audio plugin ever.".cstring,
   features: allocCStringArray([
-    CLAP_PLUGIN_FEATURE_AUDIO_EFFECT,
-    CLAP_PLUGIN_FEATURE_MIXING,
-    CLAP_PLUGIN_FEATURE_STEREO,
+    pluginFeatureInstrument,
+    pluginFeatureSynthesizer,
+    pluginFeatureStereo,
   ])
 )
 
-proc PluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
-  if event.spaceId == clapCoreEventSpaceId:
-    if event.type == ord(ClapEventTypes.noteOn) or event.type == ord(ClapEventTypes.noteOff) or event.type == ord(ClapEventTypes.noteChoke):
-      let noteEvent = cast[ptr ClapEventNote](event)
+proc pluginProcessEvent(plugin: ptr MyPlugin, event: ptr EventHeader) =
+  if event.spaceId == coreEventSpaceId:
+    if event.`type` == eventNoteOn.uint16 or
+       event.`type` == eventNoteOff.uint16 or
+       event.`type` == eventNoteChoke.uint16:
+      let noteEvent = cast[ptr EventNote](event)
 
       for i in countdown(plugin.voices.len - 1, 0):
         var voice = addr plugin.voices[i]
-        if (noteEvent.key == -1 or voice.key == noteEvent.key) and (noteEvent.noteId == -1 or voice.noteId == noteEvent.noteId) and (noteEvent.channel == -1 or voice.channel == noteEvent.channel):
-          if event.type == ord(ClapEventTypes.noteChoke):
+        if (noteEvent.key == -1 or voice.key == noteEvent.key) and
+           (noteEvent.noteId == -1 or voice.noteId == noteEvent.noteId) and
+           (noteEvent.channel == -1 or voice.channel == noteEvent.channel):
+          if event.`type` == eventNoteChoke.uint16:
             plugin.voices.del(i)
           else:
             voice.held = false
 
-      if event.type == ord(ClapEventTypes.noteOn):
-        var voice = Voice(
+      if event.`type` == eventNoteOn.uint16:
+        let voice = Voice(
           held: true,
           noteId: noteEvent.noteId,
           channel: noteEvent.channel,
@@ -56,10 +63,13 @@ proc PluginProcessEvent(plugin: ptr MyPlugin, event: ptr ClapEventHeader) =
         )
         plugin.voices.add(voice)
 
-proc PluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint32, outputL: ptr UncheckedArray[cfloat], outputR: ptr UncheckedArray[cfloat]) =
-  for index in startIndex..<endIndex:
+proc pluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint32,
+                       outputL: ptr UncheckedArray[cfloat], outputR: ptr UncheckedArray[cfloat]) =
+  if outputL.isNil or outputR.isNil:
+    return
+  for index in startIndex ..< endIndex:
     var sum: float = 0.0
-    for i in 0..<plugin.voices.len:
+    for i in 0 ..< plugin.voices.len:
       var voice = addr plugin.voices[i]
       if not voice.held:
         continue
@@ -68,7 +78,7 @@ proc PluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint3
       sum += sin(voice.phase * 2.0 * PI) * 0.2
 
       # Calculate frequency and phase increment
-      let frequency = keyNumberToFrequency(voice.key)
+      let frequency = keyNumberToFrequency(voice.key.int)
       let phaseIncrement = frequency / plugin.sampleRate
 
       # Advance phase
@@ -76,70 +86,66 @@ proc PluginRenderAudio(plugin: ptr MyPlugin, startIndex: uint32, endIndex: uint3
       if voice.phase >= 1.0:
         voice.phase -= 1.0
 
-    outputL[index] = sum
-    outputR[index] = sum
+    outputL[index] = sum.cfloat
+    outputR[index] = sum.cfloat
 
-
-let extensionNotePorts = ClapPluginNotePorts(
-  count: proc(plugin: ptr ClapPlugin, isInput: bool): uint32 {.cdecl.} =
-    return if isInput : 1 else: 0,
-  get: proc(plugin: ptr ClapPlugin, index: uint32, isInput: bool, info: ptr ClapNotePortInfo): bool {.cdecl} =
+let extensionNotePorts = PluginNotePorts(
+  count: proc(plugin: ptr Plugin, isInput: bool): uint32 {.cdecl.} =
+    return if isInput: 1 else: 0,
+  get: proc(plugin: ptr Plugin, index: uint32, isInput: bool, info: ptr NotePortInfo): bool {.cdecl.} =
     if not isInput or index > 0:
-       return false
+      return false
     info.id = 0
     info.name.setName("Note Input Port")
-    info.supportedDialects = CLAP_NOTE_DIALECT_CLAP.ord
-    info.preferredDialect = CLAP_NOTE_DIALECT_CLAP.ord
+    info.supportedDialects = NoteDialect.dialectClap.ord.uint32
+    info.preferredDialect = NoteDialect.dialectClap.ord.uint32
     return true
 )
 
-let extensionAudioPorts = ClapPluginAudioPorts(
-  count: proc(plugin: ptr ClapPlugin, isInput: bool): uint32 {.cdecl} =
-    return if isInput : 0 else: 1,
-  get: proc(plugin: ptr ClapPlugin, index: uint32, isInput: bool, info: ptr ClapAudioPortInfo): bool {.cdecl} =
+let extensionAudioPorts = PluginAudioPorts(
+  count: proc(plugin: ptr Plugin, isInput: bool): uint32 {.cdecl.} =
+    return if isInput: 0 else: 1,
+  get: proc(plugin: ptr Plugin, index: uint32, isInput: bool, info: ptr AudioPortInfo): bool {.cdecl.} =
     if isInput or index > 0:
       return false
     info.id = 0
     info.channelCount = 2
-    info.flags = CLAP_AUDIO_PORT_IS_MAIN
-    info.portType = CLAP_PORT_STEREO
-    info.inPlacePair = CLAP_INVALID_ID
+    info.flags = audioPortIsMain
+    info.portType = portStereo
+    info.inPlacePair = invalidId
     info.name.setName("Audio Output Port")
     return true
 )
 
-
-let pluginClass: ClapPlugin = ClapPlugin(
+let pluginClass: Plugin = Plugin(
   desc: pluginDescriptor.addr,
-  plugin_data: nil,
-  init: proc(plugin: ptr clap_plugin): bool {.cdecl.} =
-    # var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+  pluginData: nil,
+  init: proc(plugin: ptr Plugin): bool {.cdecl.} =
     return true,
-  destroy: proc(plugin: ptr ClapPlugin) {.cdecl.} =
-    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+  destroy: proc(plugin: ptr Plugin) {.cdecl.} =
+    let pluginData = cast[ptr MyPlugin](plugin.pluginData)
     deallocShared(pluginData),
-  activate: proc(plugin: ptr ClapPlugin; sampleRate: float; minimumFramesCount: uint32; maximunFramesCount: uint32): bool {.cdecl.} =
-    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+  activate: proc(plugin: ptr Plugin; sampleRate: cdouble; minimumFramesCount: uint32; maximumFramesCount: uint32): bool {.cdecl.} =
+    let pluginData = cast[ptr MyPlugin](plugin.pluginData)
     pluginData.sampleRate = sampleRate
     return true,
-  deactivate: proc(plugin: ptr ClapPlugin) {.cdecl.} =
+  deactivate: proc(plugin: ptr Plugin) {.cdecl.} =
     discard,
-  start_processing: proc(plugin: ptr ClapPlugin): bool {.cdecl.} =
+  startProcessing: proc(plugin: ptr Plugin): bool {.cdecl.} =
     return true,
-  stop_processing: proc(plugin: ptr ClapPlugin) {.cdecl.} =
+  stopProcessing: proc(plugin: ptr Plugin) {.cdecl.} =
     discard,
-  reset: proc(plugin: ptr ClapPlugin) {.cdecl.} =
-    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.plugin_data)
+  reset: proc(plugin: ptr Plugin) {.cdecl.} =
+    let pluginData = cast[ptr MyPlugin](plugin.pluginData)
     pluginData.voices.setLen(0),
-  process: proc (plugin: ptr ClapPlugin; process: ptr clap_process): ClapProcessStatus {.cdecl.} =
-    var pluginData: ptr MyPlugin = cast[ptr MyPlugin](plugin.pluginData)
-    
+  process: proc(plugin: ptr Plugin; process: ptr Process): ProcessStatus {.cdecl.} =
+    let pluginData = cast[ptr MyPlugin](plugin.pluginData)
+
     assert(process.audioOutputsCount == 1)
-    assert(process.audioInputsCount == 0)
 
     let frameCount: uint32 = process.framesCount
     let inputEventCount = process.inEvents.getEventCount()
-    
+
     # Get output buffers
     let outputL = process.audioOutputs[0].addr.getChannelData32(0)
     let outputR = process.audioOutputs[0].addr.getChannelData32(1)
@@ -157,7 +163,7 @@ let pluginClass: ClapPlugin = ClapPlugin(
             nextEventFrame = event.time
             break
 
-          PluginProcessEvent(pluginData, event)
+          pluginProcessEvent(pluginData, event)
           eventIndex += 1
 
           # Get next event time
@@ -169,9 +175,11 @@ let pluginClass: ClapPlugin = ClapPlugin(
               nextEventFrame = frameCount
           else:
             nextEventFrame = frameCount
+        else:
+          break
 
       # Render audio from current position to next event
-      PluginRenderAudio(pluginData, i, nextEventFrame, outputL, outputR)
+      pluginRenderAudio(pluginData, i, nextEventFrame, outputL, outputR)
       i = nextEventFrame
 
     # Clean up finished voices
@@ -180,51 +188,51 @@ let pluginClass: ClapPlugin = ClapPlugin(
       idx -= 1
       if not pluginData.voices[idx].held:
         let voice = pluginData.voices[idx]
-        var event: ClapEventNote
+        var event: EventNote
         event.header.size = cast[uint32](sizeof(event))
         event.header.time = 0
-        event.header.space_id = clapCoreEventSpaceId
-        event.header.type = ord(ClapEventTypes.noteEnd)
+        event.header.spaceId = coreEventSpaceId
+        event.header.`type` = eventNoteEnd.uint16
         event.header.flags = 0
         event.key = voice.key
-        event.note_id = voice.note_id
+        event.noteId = voice.noteId
         event.channel = voice.channel
-        event.port_index = 0
+        event.portIndex = 0
         if process.outEvents.tryPushEvent(event.header.addr):
           pluginData.voices.delete(idx)
 
-    return CLAP_PROCESS_CONTINUE,
-  get_extension: proc (plugin: ptr clap_plugin; id: cstring): pointer {.cdecl.} =
-    if id == CLAP_EXT_NOTE_PORTS:
+    return processContinue,
+  getExtension: proc(plugin: ptr Plugin; id: cstring): pointer {.cdecl.} =
+    if id == extNotePorts:
       return cast[pointer](extensionNotePorts.addr)
-    if id == CLAP_EXT_AUDIO_PORTS:
+    if id == extAudioPorts:
       return cast[pointer](extensionAudioPorts.addr)
     return nil,
-  on_main_thread: proc (plugin: ptr clap_plugin) {.cdecl.} =
+  onMainThread: proc(plugin: ptr Plugin) {.cdecl.} =
     discard
 )
 
-
-var pluginFactory: ClapPluginFactory = ClapPluginFactory(
-  get_plugin_count: proc(factory: ptr ClapPluginFactory): uint32 {.cdecl.} =
+var pluginFactory: PluginFactory = PluginFactory(
+  getPluginCount: proc(factory: ptr PluginFactory): uint32 {.cdecl.} =
     return 1,
-  get_plugin_descriptor: proc(factory: ptr ClapPluginFactory, index: uint32): ptr ClapPluginDescriptor {.cdecl.} =
-    return if index == 0 : pluginDescriptor.addr else: nil,
-  create_plugin: proc(factory: ptr ClapPluginFactory, host: ptr ClapHost, pluginId: cstring): ptr ClapPlugin {.cdecl.} =
-    if not clapVersionIsCompatible(host.clapVersion) or pluginId != pluginDescriptor.id:
+  getPluginDescriptor: proc(factory: ptr PluginFactory, index: uint32): ptr PluginDescriptor {.cdecl.} =
+    return if index == 0: pluginDescriptor.addr else: nil,
+  createPlugin: proc(factory: ptr PluginFactory, host: ptr Host, pluginId: cstring): ptr Plugin {.cdecl.} =
+    if not versionIsCompatible(host.clapVersion) or pluginId != pluginDescriptor.id:
       return nil
-    var myPlugin: ptr MyPlugin = cast[ptr MyPlugin](allocShared0(sizeof(MyPlugin)))
+    var myPlugin = cast[ptr MyPlugin](allocShared0(sizeof(MyPlugin)))
     myPlugin.host = host
     myPlugin.plugin = pluginClass
-    myPlugin.plugin.plugin_data = cast[pointer](myPlugin)
+    myPlugin.plugin.pluginData = cast[pointer](myPlugin)
     return myPlugin.plugin.addr,
 )
 
-
-var clap_entry* {.exportc, dynlib.}: ClapPluginEntry = ClapPluginEntry(
-    clap_version: CLAP_VERSION_INIT,
-    init: proc(plugin_path: cstring): bool {.cdecl.} =
-      return true,
-    get_factory: proc(factoryId: cstring): pointer {.cdecl.} =
-      return if factoryId == CLAP_PLUGIN_FACTORY_ID: cast[pointer](pluginFactory.addr) else: nil,
+var clap_entry* {.exportc, dynlib.}: PluginEntry = PluginEntry(
+  clapVersion: versionInit,
+  init: proc(pluginPath: cstring): bool {.cdecl.} =
+    return true,
+  deinit: proc() {.cdecl.} =
+    discard,
+  getFactory: proc(factoryId: cstring): pointer {.cdecl.} =
+    return if factoryId == pluginFactoryId: cast[pointer](pluginFactory.addr) else: nil,
 )

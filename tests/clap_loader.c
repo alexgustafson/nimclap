@@ -30,6 +30,17 @@
     #define LIB_ERROR() dlerror()
 #endif
 
+// Minimal host callback stubs. CLAP requires these to be non-NULL function
+// pointers. get_extension returns NULL, which is valid and means "this host
+// does not provide that extension".
+static const void *test_host_get_extension(const clap_host_t *host, const char *extension_id) {
+    (void)host; (void)extension_id;
+    return NULL;
+}
+static void test_host_request_restart(const clap_host_t *host)  { (void)host; }
+static void test_host_request_process(const clap_host_t *host)  { (void)host; }
+static void test_host_request_callback(const clap_host_t *host) { (void)host; }
+
 // Helper functions for test event queue
 static uint32_t test_input_events_size(const clap_input_events_t *list) {
     // Our extended structure that includes the standard fields plus our data
@@ -180,10 +191,10 @@ int main(int argc, char *argv[]) {
                                 .vendor = "Test",
                                 .url = "http://test.com",
                                 .version = "1.0.0",
-                                .get_extension = NULL,
-                                .request_restart = NULL,
-                                .request_process = NULL,
-                                .request_callback = NULL
+                                .get_extension = test_host_get_extension,
+                                .request_restart = test_host_request_restart,
+                                .request_process = test_host_request_process,
+                                .request_callback = test_host_request_callback
                             };
                             
                             // Try to create the plugin
@@ -252,11 +263,16 @@ int main(int argc, char *argv[]) {
                                     const clap_plugin_audio_ports_t* audio_ports = 
                                         (const clap_plugin_audio_ports_t*)plugin->get_extension(plugin, CLAP_EXT_AUDIO_PORTS);
                                     
+                                    // Remember the declared input-port count so the process test
+                                    // only supplies input buffers when the plugin asks for them.
+                                    uint32_t plugin_audio_input_count = 0;
+                                    
                                     if (audio_ports) {
                                         printf("    Audio ports extension found!\n");
                                         
                                         // Check input ports
                                         uint32_t input_count = audio_ports->count(plugin, true);
+                                        plugin_audio_input_count = input_count;
                                         printf("    Input audio ports: %u\n", input_count);
                                         for (uint32_t j = 0; j < input_count; j++) {
                                             clap_audio_port_info_t info;
@@ -340,6 +356,24 @@ int main(int argc, char *argv[]) {
                                                             .constant_mask = 0
                                                         };
                                                         
+                                                        // Stereo input buffers (the plugin declares an input port,
+                                                        // so a conforming host must provide matching buffers).
+                                                        float dummy_input_left[1024];
+                                                        float dummy_input_right[1024];
+                                                        for (int s = 0; s < 1024; s++) {
+                                                            dummy_input_left[s]  = 0.25f;
+                                                            dummy_input_right[s] = -0.25f;
+                                                        }
+                                                        float* input_ptrs[2] = {dummy_input_left, dummy_input_right};
+                                                        
+                                                        clap_audio_buffer_t audio_inputs = {
+                                                            .data32 = input_ptrs,
+                                                            .data64 = NULL,
+                                                            .channel_count = 2,  // Stereo
+                                                            .latency = 0,
+                                                            .constant_mask = 0
+                                                        };
+                                                        
                                                         // Create test events - D#4 note
                                                         const int NOTE_KEY = 63;  // D#4 (MIDI note number)
                                                         const uint32_t NOTE_ON_TIME = 100;  // Start at sample 100
@@ -405,9 +439,9 @@ int main(int argc, char *argv[]) {
                                                             .steady_time = -1,
                                                             .frames_count = 512,
                                                             .transport = NULL,
-                                                            .audio_inputs = NULL,
+                                                            .audio_inputs = plugin_audio_input_count > 0 ? &audio_inputs : NULL,
                                                             .audio_outputs = &audio_outputs,
-                                                            .audio_inputs_count = 0,
+                                                            .audio_inputs_count = plugin_audio_input_count > 0 ? 1 : 0,
                                                             .audio_outputs_count = 1,
                                                             .in_events = (const clap_input_events_t*)&input_events,
                                                             .out_events = NULL

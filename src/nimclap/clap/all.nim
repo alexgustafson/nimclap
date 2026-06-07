@@ -5,10 +5,12 @@ import
   ext/draft/extensibleaudioports,
   ext/draft/gainadjustmentmetering,
   ext/draft/minicurvedisplay,
+  ext/draft/octavenumber,
   ext/draft/projectlocation,
   ext/draft/resourcedirectory,
   ext/draft/scratchmemory,
   ext/draft/transportcontrol,
   ext/draft/triggers,
   ext/draft/tuning,
-  ext/draft/undo
+  ext/draft/undo,
+  ext/draft/webview

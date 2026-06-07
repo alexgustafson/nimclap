@@ -1,10 +1,8 @@
 import private/std, private/macros
 
-##  This type defines a timestamp: the number of seconds since UNIX EPOCH.
-##  See C's time_t time(time_t *).
-
 type Timestamp* = uint64
-
-##  Value for unknown timestamp.
+  ## This type defines a timestamp: the number of seconds since UNIX EPOCH.
+  ## See C's `time_t time(time_t *)`.
 
 let timestampUnknown*: Timestamp = 0
+  ## Value for unknown timestamp.

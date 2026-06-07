@@ -1,5 +1,3 @@
-import private/macros, private/std
-
 type Version* {.bycopy.} = object
   ##  This is the major ABI and API design
   ##  Version 0.X.Y correspond to the development stage, API and ABI are not stable
@@ -11,7 +9,7 @@ type Version* {.bycopy.} = object
 const
   versionMajor* = 1
   versionMinor* = 2
-  versionRevision* = 6
+  versionRevision* = 8
   versionInit* = Version(
     major: versionMajor,
     minor: versionMinor,

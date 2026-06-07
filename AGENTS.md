@@ -4,7 +4,7 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 ## Project Overview
 
-This is a Nim wrapper for the CLAP (CLever Audio Plugin) API, enabling the development of audio plugins in Nim. The project provides bindings to the CLAP C API and helper utilities for plugin development.
+This is a native Nim implementation of the CLAP (CLever Audio Plugin) ABI, enabling the development of audio plugins in Nim. The Nim modules re-declare the CLAP ABI directly and provide helper utilities for plugin development.
 
 ## Build Commands
 
@@ -23,24 +23,14 @@ nimble build_clap_loader
 tests\clap_loader.exe build\plugin-template.clap
 ```
 
-### Code Generation
+### Upstream Headers
 The Nim bindings are **hand-maintained** (the previous c2nim-based `scripts/`
 pipeline has been removed). The upstream CLAP C headers live in the `clap/` git
-submodule, pinned to a reviewed commit.
+submodule, used as the reference for the ABI and by the C plugin loader.
 
 ```bash
 # First-time checkout of the upstream headers
 git submodule update --init clap
-
-# Report which CLAP headers changed since the last reviewed baseline
-nimble check_abi
-
-# Pull the latest upstream headers, then report drift
-nimble update_clap
-
-# Record the current submodule commit as the reviewed baseline (after the
-# bindings have been reconciled with it)
-nimble bless_abi
 ```
 
 ## Architecture
@@ -48,10 +38,8 @@ nimble bless_abi
 ### Core Structure
 - `src/nimclap.nim` - Main API exports and type aliases for a more Nim-friendly interface
 - `src/nimclap/clap/` - Hand-maintained bindings, one Nim module per upstream CLAP C header
-- `clap/` - git submodule with the upstream CLAP C headers (source of truth for the ABI)
-- `tests/abi_tracker.nim` - git-based ABI change tracker
-- `tests/clap_abi.baseline` - reviewed-commit + per-header blob hashes (generated; update via `nimble bless_abi`)
-- `tests/tabi.nim` - drift gate for `nimble test`
+- `clap/` - git submodule with the upstream CLAP C headers (reference for the ABI)
+- `tests/clap_loader.c` - C tool that loads a `.clap` plugin and exercises its lifecycle
 
 ### Key Components
 - **Plugin Implementation**: Plugins inherit from `Plugin` and implement callbacks for initialization, processing, and state management
@@ -62,9 +50,8 @@ nimble bless_abi
 ### Maintaining the Bindings
 The bindings are edited by hand. Each module under `src/nimclap/clap/` mirrors
 one upstream CLAP C header; doc comments are translated into Nim-oriented
-documentation. When `nimble check_abi` reports that a header changed, update the
-corresponding Nim module(s) by hand, then run `nimble bless_abi` to record the
-new reviewed baseline. The mapping from a header to its binding strips hyphens
+documentation. When the upstream headers change, update the corresponding Nim
+module(s) by hand. The mapping from a header to its binding strips hyphens
 from the file name (e.g. `ext/audio-ports.h` -> `src/nimclap/clap/ext/audioports.nim`).
 
 ## Development Notes

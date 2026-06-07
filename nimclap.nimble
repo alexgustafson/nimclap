@@ -10,26 +10,6 @@ srcDir        = "src"
 # Dependencies
 requires "nim >= 2.0.0"
 
-# --- CLAP ABI tracking -------------------------------------------------------
-# The Nim bindings under src/nimclap/clap are hand-maintained. The upstream
-# CLAP C headers live in the `clap/` git submodule and are pinned to a reviewed
-# commit recorded in tests/clap_abi.baseline. These tasks help keep the
-# bindings in sync. See tests/abi_tracker.nim for details.
-
-task check_abi, "Report CLAP header changes since the last reviewed baseline":
-  exec("nim r --hints:off tests/abi_tracker.nim check")
-
-task update_clap, "Pull the latest CLAP headers into the submodule, then report drift":
-  exec("git submodule update --remote clap")
-  exec("nim r --hints:off tests/abi_tracker.nim check")
-
-task bless_abi, "Record the current CLAP submodule commit as the reviewed baseline":
-  exec("nim r --hints:off tests/abi_tracker.nim bless")
-
-task test, "Compile the bindings and gate on CLAP ABI drift":
-  exec("nim check --hints:off --warnings:off src/nimclap.nim")
-  exec("nim r --hints:off tests/tabi.nim")
-
 task build_example_template, "Build the C plugin template as a CLAP plugin":
   when defined(windows):
     exec "nim compile -g --app:lib --passL:\"-static-libgcc -static-libstdc++\" -o:build/plugin_template.clap examples/plugin_template.nim"

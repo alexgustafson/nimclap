@@ -3,12 +3,6 @@
 A native Nim implementation of the [CLAP](https://cleveraudio.org/) (CLever Audio
 Plugin) ABI, for writing audio plugins in Nim.
 
-`nimclap` is **not** a binding generated over a C library. It is a hand-maintained
-set of Nim modules that re-declare the CLAP ABI directly — its types, structs,
-function tables, constants and extensions — so plugins can be written entirely in
-Nim and compiled straight to a `.clap` shared library. There is no C shim and no
-runtime dependency beyond the host that loads the plugin.
-
 The ABI is mirrored header-for-header from the upstream
 [free-audio/clap](https://github.com/free-audio/clap) project. Each Nim module
 corresponds to one upstream C header, with documentation translated into
@@ -21,7 +15,7 @@ Nim-oriented form.
 
 - Nim >= 2.0.0
 - A C toolchain for linking the shared library (e.g. MinGW-w64 / gcc / clang)
-- `git` — only needed for the ABI-tracking workflow (the upstream headers are a submodule)
+- `git` — to check out the upstream CLAP headers, which are included as the `clap/` submodule
 
 ## Installation
 
@@ -100,6 +94,12 @@ A small C loader is included to verify that a compiled plugin exports the CLAP
 interface correctly and exercises its lifecycle (init, factory, extensions,
 activate/process/deactivate, destroy).
 
+The loader includes the upstream CLAP headers, so check out the submodule first:
+
+```bash
+git submodule update --init clap
+```
+
 Build it:
 
 ```bash
@@ -120,34 +120,6 @@ The loader reports the CLAP version, lists the plugin descriptor and declared
 ports, and runs a short audio-processing pass so you can confirm the plugin is
 wired up correctly.
 
-## Keeping the ABI in sync with upstream CLAP
-
-Because the ABI is declared by hand, `nimclap` tracks the upstream headers with
-git so changes are easy to spot. The upstream headers live in the `clap/`
-submodule, pinned to a reviewed commit. That commit — together with a content
-hash for every header — is recorded in `tests/clap_abi.baseline`.
-
-First-time setup (the submodule must be checked out):
-
-```bash
-git submodule update --init clap
-```
-
-Workflow:
-
-```bash
-nimble check_abi    # report headers that drifted from the reviewed baseline
-nimble update_clap  # pull the latest upstream headers, then report what changed
-nimble bless_abi    # after reconciling the bindings, record the new baseline
-```
-
-`nimble check_abi` lists every added/removed/changed header, maps each to the Nim
-module that needs review, and prints the textual git diff. It is informational
-and always exits cleanly. The fail-on-drift gate is `nimble test`
-(`tests/tabi.nim`), which compiles the library and exits non-zero when the headers
-no longer match the reviewed baseline. See `tests/abi_tracker.nim` for the
-implementation.
-
 ## Documentation
 
 API documentation can be generated with Nim's documentation tool:
@@ -159,4 +131,4 @@ nim doc --project --outdir:docs ./src/nimclap.nim
 ## License
 
 MIT. See the upstream [CLAP](https://github.com/free-audio/clap) project for the
-license of the C headers tracked in the `clap/` submodule.
+license of the C headers in the `clap/` submodule.
